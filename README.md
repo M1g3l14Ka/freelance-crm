@@ -2,7 +2,7 @@
 
 Hi there 👋
 
-**Live Demo:** [crm.michaelkasion.ru](https://crm.michaelkasion.ru)
+**Live Demo:** [crm.mkfox.tech](https://crm.mkfox.tech)
 
 A modern financial management CRM I built for freelancers to track projects, income, subscriptions, and get AI-powered insights.
 
