@@ -86,7 +86,7 @@ export default function SignInPage() {
             </Button>
           </form>
           <p className="mt-4 text-center text-zinc-400 text-sm">
-            Don't have an account?{" "}
+            Don&apos;t have an account?{" "}
             <Link href="/auth/signup" className="text-orange-500 hover:underline">
               Sign Up
             </Link>
@@ -96,7 +96,6 @@ export default function SignInPage() {
     </div>
   )
 }
-
 
 
 
