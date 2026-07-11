@@ -1,6 +1,6 @@
-# Freelance CRM 💼
+# Freelance CRM 
 
-Hi there 👋
+Hi there
 
 **Live Demo:** [crm.mkfox.tech](https://crm.mkfox.tech)
 
@@ -8,7 +8,7 @@ A modern financial management CRM I built for freelancers to track projects, inc
 
 ---
 
-## ✨ Features
+## Features
 
 This is my personal CRM system designed to help freelancers manage their finances efficiently. It features a beautiful dark UI with orange accents and includes multi-currency support, real-time exchange rates, and AI analytics powered by Google Gemini.
 
@@ -24,7 +24,7 @@ This is my personal CRM system designed to help freelancers manage their finance
 
 ---
 
-## 🛠️ Tools & Tech Stack
+## Tools & Tech Stack
 
 **Core:** Next.js 16, TypeScript
 
@@ -46,7 +46,7 @@ This is my personal CRM system designed to help freelancers manage their finance
 
 ---
 
-## 📁 Structure
+## Structure
 
 - **Dashboard** - Main overview with total earnings, active projects, and quick stats
 - **Income Charts** - Visual representation of earnings (daily/weekly/monthly/yearly) with Gross/Net toggle
@@ -57,7 +57,7 @@ This is my personal CRM system designed to help freelancers manage their finance
 
 ---
 
-## 🎯 What I Learned
+## What I Learned
 
 Building this project helped me:
 
@@ -73,7 +73,7 @@ Building this project helped me:
 
 ---
 
-## 🚀 Future Improvements
+## Future Improvements
 
 - **Client Management** - Track clients and their projects separately
 - **Email Notifications** - Reminders for subscription payments and budget limits via Resend
@@ -85,7 +85,7 @@ Building this project helped me:
 
 ---
 
-## 📦 How to Run Locally
+## How to Run Locally
 
 If you want to run this project on your machine:
 
@@ -126,7 +126,7 @@ Navigate to **http://localhost:3000/**
 
 ---
 
-## 🌐 Production Deployment (Vercel + Turso)
+## Production Deployment (Vercel + Turso)
 
 ### 1. Create Turso Database
 1. Sign up at https://turso.tech
@@ -170,6 +170,6 @@ Feel free to reach out if you have questions or suggestions!
 
 ---
 
-## 📄 License
+## License
 
 MIT License — feel free to use this project for learning or commercial purposes.
