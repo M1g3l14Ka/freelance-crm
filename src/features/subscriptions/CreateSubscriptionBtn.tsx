@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import { Button } from "@/shared/ui/button"
 import {
   Dialog,
@@ -16,27 +16,10 @@ import { Plus } from "lucide-react"
 
 export function CreateSubscriptionBtn() {
   const [open, setOpen] = useState(false)
-  const [mounted, setMounted] = useState(false)
-
-  useEffect(() => {
-    setMounted(true)
-  }, [])
 
   const handleSubmit = async (formData: FormData) => {
     await createSubscription(formData)
     setOpen(false)
-  }
-
-  if (!mounted) {
-    return (
-      <Button
-        className="text-sm text-black font-bold font-mono bg-linear-90 from-yellow-500 to-orange-600"
-        disabled
-      >
-        <Plus size={16} className="mr-2" />
-        Subscription
-      </Button>
-    )
   }
 
   return (
@@ -136,4 +119,3 @@ export function CreateSubscriptionBtn() {
     </Dialog>
   )
 }
-

@@ -16,7 +16,7 @@ import {
   Bar,
 } from "recharts"
 import { Project } from "@prisma/client"
-import { CURRENCY_SYMBOLS, type Currency } from "@/lib/currency"
+import { CURRENCY_SYMBOLS, isCurrency, type Currency } from "@/lib/currency"
 
 type Period = "day" | "week" | "month" | "year"
 type IncomeType = "gross" | "net"
@@ -30,21 +30,24 @@ export function IncomeChart({ projects }: IncomeChartProps) {
   const [incomeType, setIncomeType] = useState<IncomeType>("gross")
   const [chartType, setChartType] = useState<"line" | "bar">("bar")
   const [groupedData, setGroupedData] = useState<{ name: string; income: number }[]>([])
-  const [primaryCurrency, setPrimaryCurrency] = useState<Currency>("RUB")
+  const projectCurrency = projects[0]?.currency
+  const primaryCurrency: Currency = projectCurrency && isCurrency(projectCurrency)
+    ? projectCurrency
+    : "RUB"
 
-  // Determine primary currency
   useEffect(() => {
-    const currencies = [...new Set(projects.map(p => p.currency))]
-    setPrimaryCurrency((currencies[0] as Currency) || "RUB")
-  }, [projects])
+    let ignore = false
 
-  // Group data by period with conversion
-  useEffect(() => {
-    const loadData = async () => {
+    async function loadData() {
       const data = await groupProjectsByPeriod(projects, period, incomeType, primaryCurrency)
-      setGroupedData(data)
+      if (!ignore) setGroupedData(data)
     }
+
     loadData()
+
+    return () => {
+      ignore = true
+    }
   }, [projects, period, incomeType, primaryCurrency])
 
   return (

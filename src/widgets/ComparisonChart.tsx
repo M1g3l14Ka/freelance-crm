@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useMemo, useEffect } from "react"
+import { useState, useEffect } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card"
 import { Button } from "@/shared/ui/button"
 import {
@@ -12,10 +12,9 @@ import {
   Tooltip,
   Legend,
   ResponsiveContainer,
-  Cell,
 } from "recharts"
 import { Project } from "@prisma/client"
-import { CURRENCY_SYMBOLS, type Currency } from "@/lib/currency"
+import { CURRENCY_SYMBOLS, isCurrency, type Currency } from "@/lib/currency"
 import { TrendingUp } from "lucide-react"
 
 interface ComparisonChartProps {
@@ -26,22 +25,27 @@ export function ComparisonChart({ projects }: ComparisonChartProps) {
   const [compareType, setCompareType] = useState<"month" | "day">("month")
   const [comparisonData, setComparisonData] = useState<{ name: string; income: number }[]>([])
   const [percentageChange, setPercentageChange] = useState(0)
-  const [primaryCurrency, setPrimaryCurrency] = useState<Currency>("RUB")
-
-  // Determine primary currency
-  useEffect(() => {
-    const currencies = [...new Set(projects.map(p => p.currency))]
-    setPrimaryCurrency((currencies[0] as Currency) || "RUB")
-  }, [projects])
+  const projectCurrency = projects[0]?.currency
+  const primaryCurrency: Currency = projectCurrency && isCurrency(projectCurrency)
+    ? projectCurrency
+    : "RUB"
 
   // Load comparison data
   useEffect(() => {
+    let ignore = false
+
     const loadData = async () => {
-      const { comparisonData, percentageChange } = await calculateComparison(projects, compareType, primaryCurrency)
-      setComparisonData(comparisonData)
-      setPercentageChange(percentageChange)
+      const result = await calculateComparison(projects, compareType, primaryCurrency)
+      if (!ignore) {
+        setComparisonData(result.comparisonData)
+        setPercentageChange(result.percentageChange)
+      }
     }
     loadData()
+
+    return () => {
+      ignore = true
+    }
   }, [projects, compareType, primaryCurrency])
 
   return (
@@ -240,4 +244,3 @@ function parsePeriodName(name: string, type: "month" | "day"): Date {
     return new Date()
   }
 }
-

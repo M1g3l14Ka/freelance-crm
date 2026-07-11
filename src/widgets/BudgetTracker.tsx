@@ -24,14 +24,19 @@ interface BudgetTrackerProps {
 export function BudgetTracker({ budgetLimits }: BudgetTrackerProps) {
   const [open, setOpen] = useState(false)
   const [expenseOpen, setExpenseOpen] = useState(false)
-  const [mounted, setMounted] = useState(false)
   const [expenses, setExpenses] = useState<Expense[]>([])
 
   useEffect(() => {
-    setMounted(true)
+    let ignore = false
     // Load expenses for current month
     const now = new Date()
-    getExpensesForPeriod(now.getMonth() + 1, now.getFullYear()).then(setExpenses)
+    getExpensesForPeriod(now.getMonth() + 1, now.getFullYear()).then((result) => {
+      if (!ignore) setExpenses(result)
+    })
+
+    return () => {
+      ignore = true
+    }
   }, [])
 
   const currentMonthLimit = budgetLimits.find(
@@ -59,18 +64,6 @@ export function BudgetTracker({ budgetLimits }: BudgetTrackerProps) {
     const now = new Date()
     const updated = await getExpensesForPeriod(now.getMonth() + 1, now.getFullYear())
     setExpenses(updated)
-  }
-
-  if (!mounted) {
-    return (
-      <Card className="bg-[#050505] border-zinc-800">
-        <CardHeader>
-          <CardTitle className="text-2xl font-bold text-transparent bg-clip-text bg-linear-60 from-yellow-500 to-orange-600">
-            Budget Limits
-          </CardTitle>
-        </CardHeader>
-      </Card>
-    )
   }
 
   return (
