@@ -48,17 +48,17 @@ export default function SignInPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[#050505] p-4">
-      <Card className="w-full max-w-md bg-[#0a0a0a] border-zinc-800">
+    <div className="flex min-h-screen items-center justify-center bg-page p-4 sm:p-6">
+      <Card className="w-full max-w-md">
         <CardHeader>
-          <CardTitle className="text-2xl font-bold text-center text-transparent bg-clip-text bg-linear-60 from-yellow-500 to-orange-600">
+          <CardTitle className="text-center text-xl font-semibold tracking-tight text-text-primary">
             Sign In to Freelance CRM
           </CardTitle>
         </CardHeader>
         <CardContent>
           <form method="post" onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
-              <Label className="text-transparent bg-clip-text bg-linear-60 from-yellow-500 to-orange-600" htmlFor="Email">Email</Label>
+              <Label htmlFor="email">Email</Label>
               <Input
                 id="email"
                 name="email"
@@ -66,54 +66,52 @@ export default function SignInPage() {
                 autoComplete="email"
                 placeholder="you@example.com"
                 required
-                className="bg-zinc-900 border-zinc-800 text-white"
               />
             </div>
             <div className="space-y-2">
-              <Label className="text-transparent bg-clip-text bg-linear-60 from-yellow-500 to-orange-600" htmlFor="password">Password</Label>
+              <Label htmlFor="password">Password</Label>
               <Input
                 id="password"
                 name="password"
                 type="password"
                 autoComplete="current-password"
                 required
-                className="bg-zinc-900 border-zinc-800 text-white"
               />
             </div>
             {error && (
-              <p className="text-red-500 text-sm text-center">{error}</p>
+              <p className="text-center text-sm text-destructive" role="alert">{error}</p>
             )}
             <Button
               type="submit"
               disabled={loading}
-              className="w-full text-lg text-black font-bold font-mono bg-linear-90 from-yellow-500 to-orange-600 hover:scale-95 cursor-pointer"
+              className="w-full"
             >
               {loading ? "Signing in..." : "Sign In"}
             </Button>
           </form>
           <div className="my-4 flex items-center gap-3" aria-hidden="true">
-            <div className="h-px flex-1 bg-zinc-800" />
-            <span className="text-xs text-zinc-500">or</span>
-            <div className="h-px flex-1 bg-zinc-800" />
+            <div className="h-px flex-1 bg-border" />
+            <span className="text-xs text-text-muted">or</span>
+            <div className="h-px flex-1 bg-border" />
           </div>
           <form action={demoAction}>
             <Button
               type="submit"
               variant="outline"
               disabled={demoPending}
-              className="w-full border-zinc-700 bg-zinc-900 text-white hover:bg-zinc-800"
+              className="w-full"
             >
               {demoPending ? "Opening demo..." : "View demo workspace"}
             </Button>
             {demoState.error && (
-              <p className="mt-2 text-center text-sm text-red-500" role="alert">
+              <p className="mt-2 text-center text-sm text-destructive" role="alert">
                 {demoState.error}
               </p>
             )}
           </form>
-          <p className="mt-4 text-center text-zinc-400 text-sm">
+          <p className="mt-4 text-center text-sm text-text-secondary">
             Don&apos;t have an account?{" "}
-            <Link href="/auth/signup" className="text-orange-500 hover:underline">
+            <Link href="/auth/signup" className="font-medium text-accent hover:text-warning hover:underline">
               Sign Up
             </Link>
           </p>

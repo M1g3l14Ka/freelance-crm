@@ -31,8 +31,8 @@ export default async function OverviewPage({ searchParams }: { searchParams: Pro
     <>
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold">Overview</h1>
-          <p className="mt-1 text-sm text-zinc-500">Your financial workspace at a glance.</p>
+          <h1 className="app-page-title">Overview</h1>
+          <p className="app-page-description">Your financial workspace at a glance.</p>
         </div>
         <div className="flex items-center gap-2">
           <CurrencySelector currentCurrency={baseCurrency} />
@@ -47,9 +47,9 @@ export default async function OverviewPage({ searchParams }: { searchParams: Pro
           ["Monthly budget", currentLimit ? `${spent.toLocaleString("ru-RU")} / ${currentLimit.limitAmount.toLocaleString("ru-RU")} ${currentLimit.currency}` : "Not set"],
         ].map(([label, value]) => (
           <AnimatedCard key={label}>
-            <Card className="h-full border-zinc-800 bg-zinc-950">
-              <CardHeader><CardTitle className="text-sm text-zinc-400">{label}</CardTitle></CardHeader>
-              <CardContent className="text-2xl font-bold text-orange-500">{value}</CardContent>
+            <Card className="h-full">
+              <CardHeader><CardTitle className="text-xs font-semibold uppercase tracking-wide text-text-muted">{label}</CardTitle></CardHeader>
+              <CardContent className="text-2xl font-semibold tracking-tight text-text-primary">{value}</CardContent>
             </Card>
           </AnimatedCard>
         ))}

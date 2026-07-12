@@ -32,42 +32,41 @@ export function CreateProjectBtn() {
         <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
                 <Button
-                    className="text-lg text-black font-bold font-mono bg-linear-90 from-yellow-500 to-orange-600 hover:scale-95 cursor-pointer m-2"
+                    size="lg"
                 >
                     Add project
                 </Button>
             </DialogTrigger>
-            <DialogContent className="font-mono font-bold text-white bg-[#050505] border">
-                <DialogHeader className="border-b p-2 flex justify-center items-center">
+            <DialogContent>
+                <DialogHeader className="border-b border-border pb-4">
                     <DialogTitle>New project</DialogTitle>
                 </DialogHeader>
 
                 <form action={handleSubmit} className="space-y-4 pt-4">
                     <div className="space-y-2">
-                        <Label htmlFor="title" className="text-zinc-300">Project/Task name</Label>
+                        <Label htmlFor="title">Project/Task name</Label>
                         <Input
                             id="title"
                             name="title"
                             placeholder="Create a card.."
                             required
-                            className="bg-zinc-900 border-zinc-800 text-white"
                         />
                     </div>
 
                     <div className="space-y-2">
-                        <Label htmlFor="grossIncome" className="text-zinc-300">Task cost</Label>
+                        <Label htmlFor="grossIncome">Task cost</Label>
                         <Input
                             id="grossIncome"
                             name="grossIncome"
                             type="number"
                             placeholder="The amount for the task (figures only)"
                             required
-                            className="[&::-webkit-inner-spin-button]:appearance-none bg-zinc-900 border-zinc-800 text-white"
+                            className="[&::-webkit-inner-spin-button]:appearance-none"
                         />
                     </div>
 
                     <div className="space-y-2">
-                        <Label htmlFor="currency" className="text-zinc-300">Currency</Label>
+                        <Label htmlFor="currency">Currency</Label>
                         <div className="flex gap-2 flex-wrap">
                             {CURRENCIES.map((curr) => (
                                 <Button
@@ -77,8 +76,8 @@ export function CreateProjectBtn() {
                                     variant={currency === curr ? "default" : "outline"}
                                     className={
                                         currency === curr
-                                            ? "bg-orange-500 hover:bg-orange-600 text-black font-bold"
-                                            : "border-zinc-700 bg-zinc-900 text-zinc-400 hover:text-white hover:bg-zinc-800"
+                                            ? "bg-accent text-accent-foreground hover:bg-accent-hover"
+                                            : ""
                                     }
                                 >
                                     {CURRENCY_SYMBOLS[curr]} {curr}
@@ -88,8 +87,8 @@ export function CreateProjectBtn() {
                     </div>
 
                     <div className="space-y-2">
-                        <Label htmlFor="taxRate" className="text-zinc-300">Tax rate(%)</Label>
-                        <div className="flex gap-2 p-2 bg-zinc-900 rounded-lg">
+                        <Label htmlFor="taxRate">Tax rate (%)</Label>
+                        <div className="app-segment">
                             {[3, 6, 13].map((rate) => (
                                 <Button
                                     key={rate}
@@ -98,8 +97,8 @@ export function CreateProjectBtn() {
                                     variant={taxRate === rate ? "default" : "outline"}
                                     className={
                                         taxRate === rate
-                                            ? "bg-orange-500 hover:bg-orange-600 text-black font-bold"
-                                            : "border-zinc-700 bg-zinc-900 text-zinc-400 hover:text-white hover:bg-zinc-800"
+                                            ? "bg-accent text-accent-foreground hover:bg-accent-hover"
+                                            : ""
                                     }
                                 >
                                     {rate}%
@@ -110,7 +109,7 @@ export function CreateProjectBtn() {
 
                     <Button
                         type="submit"
-                        className="w-full text-lg text-black font-bold font-mono bg-linear-90 from-yellow-500 to-orange-600 hover:scale-95 cursor-pointer"
+                        className="w-full"
                     >
                         Save
                     </Button>

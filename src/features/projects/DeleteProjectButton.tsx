@@ -12,7 +12,8 @@ export function DeleteProjectButton({ id }: { id: string }) {
                 await deleteProject(id);
             }
         }}
-        className="text-red-500 hover:text-red-700 transition-colors duration-300"
+        className="inline-flex size-9 items-center justify-center rounded-lg border border-transparent text-destructive transition-colors duration-150 hover:border-destructive/20 hover:bg-destructive/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-destructive/30"
+        aria-label="Delete project"
     >
         <Trash2 size={18}/>
     </button>

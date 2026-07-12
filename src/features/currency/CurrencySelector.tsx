@@ -28,18 +28,18 @@ export function CurrencySelector({ currentCurrency }: CurrencySelectorProps) {
       <DropdownMenuTrigger asChild>
         <Button
           variant="outline"
-          className="border-zinc-700 bg-zinc-900 text-white hover:bg-zinc-800"
+          className="min-w-24"
         >
           {CURRENCY_SYMBOLS[currentCurrency]} {currentCurrency}
           <ChevronDown size={16} className="ml-2" />
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent className="bg-zinc-900 border-zinc-700">
+      <DropdownMenuContent>
         {CURRENCIES.map((currency) => (
           <DropdownMenuItem
             key={currency}
             onClick={() => handleSelect(currency)}
-            className="text-white hover:bg-zinc-800 cursor-pointer"
+            className="cursor-pointer"
           >
             {CURRENCY_SYMBOLS[currency]} {currency}
           </DropdownMenuItem>
