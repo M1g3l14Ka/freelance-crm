@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
+import { requireUser } from "@/lib/auth-guard";
+import { isDemoUserId } from "@/lib/demo";
 import { prisma } from "@/lib/prisma";
 
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
@@ -7,9 +8,18 @@ const GEMINI_API_URL = "https://generativelanguage.googleapis.com/v1beta/models/
 
 export async function POST(request: Request) {
   try {
-    const session = await auth();
-    if (!session?.user?.id) {
+    let user;
+    try {
+      user = await requireUser();
+    } catch {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    if (user.isDemo || isDemoUserId(user.id)) {
+      return NextResponse.json(
+        { error: "AI requests are disabled in the public demo" },
+        { status: 403 }
+      );
     }
 
     const { question } = await request.json();
@@ -20,16 +30,16 @@ export async function POST(request: Request) {
 
     // Get user data
     const projects = await prisma.project.findMany({
-      where: { userId: session.user.id },
+      where: { userId: user.id },
       orderBy: { createdAt: "desc" },
     });
 
     const subscriptions = await prisma.subscription.findMany({
-      where: { userId: session.user.id },
+      where: { userId: user.id },
     });
 
     const budgetLimits = await prisma.budgetLimit.findMany({
-      where: { userId: session.user.id },
+      where: { userId: user.id },
     });
 
     // Build context for AI
@@ -109,5 +119,3 @@ Current date: ${new Date().toLocaleDateString("en-US")}
     );
   }
 }
-
-
