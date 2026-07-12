@@ -16,12 +16,14 @@ import { AnimatedDiv, AnimatedHeader, AnimatedCard, AnimatedTableRow } from "@/s
 import { CurrencySelector } from "@/features/currency/CurrencySelector";
 import { convertProjectsToCurrency, CURRENCY_SYMBOLS, convertCurrency, type Currency } from "@/lib/currency";
 import { AIAnalytics } from "@/widgets/AIAnalytics";
+import { isDemoUserId } from "@/lib/demo";
 
 export const dynamic = "force-dynamic";
 
 export default async function Dashboard({ searchParams }: { searchParams: Promise<{ currency?: string }> }) {
   const session = await auth();
   if (!session?.user?.id) redirect("/auth/signin");
+  const isDemo = session.user.isDemo || isDemoUserId(session.user.id);
 
   const { currency: selectedCurrency } = await searchParams;
   const baseCurrency = (selectedCurrency as Currency) || "RUB";
@@ -54,13 +56,22 @@ export default async function Dashboard({ searchParams }: { searchParams: Promis
           <h1 className="text-4xl font-bold text-transparent bg-clip-text bg-linear-60 from-yellow-500 to-orange-600">Freelance CRM</h1>
           <div className="flex items-center gap-4">
             <CurrencySelector currentCurrency={baseCurrency} />
-            <CreateSubscriptionBtn />
-            <CreateProjectBtn />
+            {!isDemo && <CreateSubscriptionBtn />}
+            {!isDemo && <CreateProjectBtn />}
             <span className="text-zinc-400 text-sm">{session.user.email}</span>
             <SignOutButton />
           </div>
         </div>
       </AnimatedHeader>
+
+      {isDemo && (
+        <div
+          className="rounded-lg border border-orange-500/30 bg-orange-500/10 px-4 py-3 text-sm text-orange-200"
+          role="status"
+        >
+          Demo workspace — sample data, read-only
+        </div>
+      )}
 
       <AnimatedDiv delay={0.1}>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 bg-[#050505]">
@@ -140,7 +151,7 @@ export default async function Dashboard({ searchParams }: { searchParams: Promis
                       }`}>
                         {project.status === "ACTIVE" ? "Active" : "Completed"}
                       </span>
-                      <ProjectStatusToggle id={project.id} currentStatus={project.status} />
+                      {!isDemo && <ProjectStatusToggle id={project.id} currentStatus={project.status} />}
                     </div>
                   </TableCell>
                   <TableCell className="text-zinc-400">{new Date(project.createdAt).toLocaleDateString("ru-RU")}</TableCell>
@@ -158,7 +169,7 @@ export default async function Dashboard({ searchParams }: { searchParams: Promis
                     )}
                   </TableCell>
                   <TableCell>
-                    <DeleteProjectButton id={project.id} />
+                    {!isDemo && <DeleteProjectButton id={project.id} />}
                   </TableCell>
                 </AnimatedTableRow>
               ))}
@@ -175,14 +186,14 @@ export default async function Dashboard({ searchParams }: { searchParams: Promis
       </AnimatedDiv>
 
       <AnimatedDiv delay={0.4}>
-        <SubscriptionCalendar subscriptions={subscriptions} />
+        <SubscriptionCalendar subscriptions={subscriptions} readOnly={isDemo} />
       </AnimatedDiv>
 
       <AnimatedDiv delay={0.5}>
-        <BudgetTracker budgetLimits={budgetLimits} />
+        <BudgetTracker budgetLimits={budgetLimits} readOnly={isDemo} />
       </AnimatedDiv>
 
-      <AIAnalytics />
+      <AIAnalytics readOnly={isDemo} />
     </main>
   );
 }
