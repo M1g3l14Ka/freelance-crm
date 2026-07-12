@@ -15,7 +15,7 @@ export async function signInToDemo(
   }
 
   try {
-    await signIn("demo", { redirectTo: "/" })
+    await signIn("demo", { redirectTo: "/dashboard" })
   } catch (error) {
     if (!(error instanceof AuthError)) throw error
     console.error("Demo sign-in failed:", error.type)

@@ -5,7 +5,7 @@ const mocks = vi.hoisted(() => ({ auth: vi.fn() }))
 vi.mock("server-only", () => ({}))
 vi.mock("@/lib/auth", () => ({ auth: mocks.auth }))
 
-import { requireUser, requireWritableUser } from "@/lib/auth-guard"
+import { AuthenticationRequiredError, requireUser, requireWritableUser } from "@/lib/auth-guard"
 import { isDemoUserId, ReadOnlyDemoError } from "@/lib/demo"
 
 describe("demo authorization policy", () => {
@@ -26,7 +26,7 @@ describe("demo authorization policy", () => {
 
   it("rejects unauthenticated users", async () => {
     mocks.auth.mockResolvedValue(null)
-    await expect(requireUser()).rejects.toThrow("Unauthorized")
+    await expect(requireUser()).rejects.toBeInstanceOf(AuthenticationRequiredError)
   })
 
   it("allows normal users to write and rejects the configured demo user", async () => {
