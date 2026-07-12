@@ -10,13 +10,15 @@ import { AnimatedDiv } from "@/shared/ui/animated"
 
 interface SubscriptionCalendarProps {
   subscriptions: Subscription[]
+  readOnly?: boolean
 }
 
-export function SubscriptionCalendar({ subscriptions }: SubscriptionCalendarProps) {
+export function SubscriptionCalendar({ subscriptions, readOnly = false }: SubscriptionCalendarProps) {
   useEffect(() => {
+    if (readOnly) return
     // Check and update payment dates on load
     updateSubscriptionDates()
-  }, [])
+  }, [readOnly])
 
   const getDaysUntilPayment = (nextPaymentDate: Date) => {
     const today = new Date()
@@ -94,14 +96,16 @@ export function SubscriptionCalendar({ subscriptions }: SubscriptionCalendarProp
                       >
                         {getStatusText(days)}
                       </div>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => deleteSubscription(sub.id)}
-                        className="text-zinc-400 hover:text-red-500"
-                      >
-                        <Trash2 size={16} />
-                      </Button>
+                      {!readOnly && (
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => deleteSubscription(sub.id)}
+                          className="text-zinc-400 hover:text-red-500"
+                        >
+                          <Trash2 size={16} />
+                        </Button>
+                      )}
                     </div>
                   </div>
                 </AnimatedDiv>
@@ -117,5 +121,4 @@ export function SubscriptionCalendar({ subscriptions }: SubscriptionCalendarProp
     </Card>
   )
 }
-
 

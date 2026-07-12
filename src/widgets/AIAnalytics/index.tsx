@@ -13,14 +13,14 @@ const SUGGESTED_QUESTIONS = [
   { icon: Wallet, text: "How much can I put off?" },
 ];
 
-export function AIAnalytics() {
+export function AIAnalytics({ readOnly = false }: { readOnly?: boolean }) {
   const [question, setQuestion] = useState("");
   const [answer, setAnswer] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [history, setHistory] = useState<{ question: string; answer: string }[]>([]);
 
   const handleAsk = async (q: string = question) => {
-    if (!q.trim()) return;
+    if (readOnly || !q.trim()) return;
 
     setIsLoading(true);
     try {
@@ -69,18 +69,25 @@ export function AIAnalytics() {
               onKeyPress={handleKeyPress}
               placeholder="Ask AI about your finances..."
               className="bg-zinc-900 border-zinc-800 text-white flex-1"
-              disabled={isLoading}
+              disabled={isLoading || readOnly}
             />
             <Button
               onClick={() => handleAsk()}
-              disabled={isLoading || !question.trim()}
+              disabled={isLoading || readOnly || !question.trim()}
+              title={readOnly ? "AI requests are disabled in the public demo" : undefined}
               className="bg-orange-500 hover:bg-orange-600 text-black font-bold"
             >
               {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
             </Button>
           </div>
 
-          {!answer && !isLoading && (
+          {readOnly && (
+            <p className="text-sm text-zinc-500" role="note">
+              AI requests are disabled in the public demo.
+            </p>
+          )}
+
+          {!readOnly && !answer && !isLoading && (
             <div className="flex gap-2 flex-wrap">
               {SUGGESTED_QUESTIONS.map((item, i) => (
                 <Button
