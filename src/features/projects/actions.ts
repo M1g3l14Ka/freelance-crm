@@ -2,14 +2,10 @@
 
 import { prisma } from "@/lib/prisma"
 import { revalidatePath } from "next/cache"
-import { auth } from "@/lib/auth"
+import { requireUser } from "@/lib/auth-guard"
 
 export async function createProject(formData: FormData) {
-  const session = await auth()
-
-  if (!session?.user?.id) {
-    throw new Error("Unauthorized")
-  }
+  const user = await requireUser()
 
   const title = formData.get('title') as string
   const grossIncome = parseFloat(formData.get('grossIncome') as string)
@@ -30,7 +26,7 @@ export async function createProject(formData: FormData) {
       netIncome,
       currency,
       status: "ACTIVE",
-      userId: session.user.id
+      userId: user.id
     }
   })
 
@@ -38,15 +34,11 @@ export async function createProject(formData: FormData) {
 }
 
 export async function deleteProject(id: string) {
-  const session = await auth()
-
-  if (!session?.user?.id) {
-    throw new Error("Unauthorized")
-  }
+  const user = await requireUser()
 
   try {
     await prisma.project.delete({
-      where: { id, userId: session.user.id },
+      where: { id, userId: user.id },
     })
     revalidatePath("/")
     return { success: true }
@@ -56,15 +48,11 @@ export async function deleteProject(id: string) {
 }
 
 export async function updateProjectStatus(id: string, status: string) {
-  const session = await auth()
-
-  if (!session?.user?.id) {
-    throw new Error("Unauthorized")
-  }
+  const user = await requireUser()
 
   try {
     await prisma.project.update({
-      where: { id, userId: session.user.id },
+      where: { id, userId: user.id },
       data: { status },
     })
     revalidatePath("/")

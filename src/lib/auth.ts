@@ -12,12 +12,19 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         password: { label: "Password", type: "password" },
       },
       async authorize(credentials) {
-        if (!credentials?.email || !credentials?.password) {
+        const email = typeof credentials?.email === "string"
+          ? credentials.email.trim().toLowerCase()
+          : ""
+        const password = typeof credentials?.password === "string"
+          ? credentials.password
+          : ""
+
+        if (!email || !password) {
           throw new Error("Email and password are required")
         }
 
         const user = await prisma.user.findUnique({
-          where: { email: credentials.email as string },
+          where: { email },
         })
 
         if (!user || !user.password) {
@@ -25,7 +32,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         }
 
         const isMatch = await bcrypt.compare(
-          credentials.password as string,
+          password,
           user.password
         )
 
