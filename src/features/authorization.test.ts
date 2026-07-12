@@ -2,18 +2,24 @@ import { beforeEach, describe, expect, it, vi } from "vitest"
 
 const mocks = vi.hoisted(() => ({
   requireUser: vi.fn(),
+  requireWritableUser: vi.fn(),
   revalidatePath: vi.fn(),
   projectCreate: vi.fn(),
   projectDelete: vi.fn(),
   projectUpdate: vi.fn(),
   subscriptionFindMany: vi.fn(),
+  subscriptionCreate: vi.fn(),
   subscriptionUpdate: vi.fn(),
   budgetLimitFindFirst: vi.fn(),
+  budgetLimitUpsert: vi.fn(),
   expenseCreate: vi.fn(),
 }))
 
 vi.mock("server-only", () => ({}))
-vi.mock("@/lib/auth-guard", () => ({ requireUser: mocks.requireUser }))
+vi.mock("@/lib/auth-guard", () => ({
+  requireUser: mocks.requireUser,
+  requireWritableUser: mocks.requireWritableUser,
+}))
 vi.mock("next/cache", () => ({ revalidatePath: mocks.revalidatePath }))
 vi.mock("@/lib/prisma", () => ({
   prisma: {
@@ -23,11 +29,13 @@ vi.mock("@/lib/prisma", () => ({
       update: mocks.projectUpdate,
     },
     subscription: {
+      create: mocks.subscriptionCreate,
       findMany: mocks.subscriptionFindMany,
       update: mocks.subscriptionUpdate,
     },
     budgetLimit: {
       findFirst: mocks.budgetLimitFindFirst,
+      upsert: mocks.budgetLimitUpsert,
     },
     expense: {
       create: mocks.expenseCreate,
@@ -36,20 +44,50 @@ vi.mock("@/lib/prisma", () => ({
 }))
 
 import { createProject, deleteProject } from "@/features/projects/actions"
-import { updateSubscriptionDates } from "@/features/subscriptions/actions"
-import { addExpense } from "@/features/budget/actions"
+import { createSubscription, updateSubscriptionDates } from "@/features/subscriptions/actions"
+import { addExpense, createBudgetLimit } from "@/features/budget/actions"
 
 describe("server action authorization", () => {
   beforeEach(() => {
     vi.clearAllMocks()
     mocks.requireUser.mockResolvedValue({ id: "user-a", email: "a@example.com" })
+    mocks.requireWritableUser.mockResolvedValue({ id: "user-a", email: "a@example.com" })
   })
 
   it("rejects an unauthenticated action before accessing Prisma", async () => {
-    mocks.requireUser.mockRejectedValue(new Error("Unauthorized"))
+    mocks.requireWritableUser.mockRejectedValue(new Error("Unauthorized"))
 
     await expect(createProject(new FormData())).rejects.toThrow("Unauthorized")
     expect(mocks.projectCreate).not.toHaveBeenCalled()
+  })
+
+  it("allows a normal user to create data owned by that user", async () => {
+    mocks.projectCreate.mockResolvedValue({})
+    const formData = new FormData()
+    formData.set("title", "Owned project")
+    formData.set("grossIncome", "1000")
+    formData.set("taxRate", "6")
+    formData.set("currency", "USD")
+
+    await createProject(formData)
+
+    expect(mocks.projectCreate).toHaveBeenCalledWith({
+      data: expect.objectContaining({ userId: "user-a", title: "Owned project" }),
+    })
+  })
+
+  it("rejects demo writes in every mutation category before Prisma", async () => {
+    mocks.requireWritableUser.mockRejectedValue(new Error("Demo workspace is read-only"))
+
+    await expect(createProject(new FormData())).rejects.toThrow("read-only")
+    await expect(createSubscription(new FormData())).rejects.toThrow("read-only")
+    await expect(createBudgetLimit(new FormData())).rejects.toThrow("read-only")
+    await expect(addExpense(new FormData())).rejects.toThrow("read-only")
+
+    expect(mocks.projectCreate).not.toHaveBeenCalled()
+    expect(mocks.subscriptionCreate).not.toHaveBeenCalled()
+    expect(mocks.budgetLimitUpsert).not.toHaveBeenCalled()
+    expect(mocks.expenseCreate).not.toHaveBeenCalled()
   })
 
   it("includes the authenticated owner in a project mutation", async () => {
@@ -57,7 +95,7 @@ describe("server action authorization", () => {
 
     await expect(deleteProject("project-owned-by-user-b")).resolves.toEqual({
       success: false,
-      error: "Record not found",
+      error: "Unable to complete request",
     })
     expect(mocks.projectDelete).toHaveBeenCalledWith({
       where: { id: "project-owned-by-user-b", userId: "user-a" },
