@@ -1,6 +1,6 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { Button } from "@/shared/ui/button";
 import {
   DropdownMenu,
@@ -17,9 +17,10 @@ interface CurrencySelectorProps {
 
 export function CurrencySelector({ currentCurrency }: CurrencySelectorProps) {
   const router = useRouter();
+  const pathname = usePathname();
 
   const handleSelect = (currency: string) => {
-    router.push(`/?currency=${currency}`);
+    router.push(`${pathname}?currency=${currency}`);
   };
 
   return (

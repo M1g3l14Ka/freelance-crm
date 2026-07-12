@@ -11,18 +11,13 @@ import {
 import { Input } from "@/shared/ui/input";
 import { Label } from "@/shared/ui/label";
 import { createProject } from "./actions";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { CURRENCIES, CURRENCY_SYMBOLS } from "@/lib/currency";
 
 export function CreateProjectBtn() {
     const [open, setOpen] = useState(false);
     const [taxRate, setTaxRate] = useState(6);
     const [currency, setCurrency] = useState("RUB");
-    const [mounted, setMounted] = useState(false);
-
-    useEffect(() => {
-        setMounted(true);
-    }, []);
 
     const handleSubmit = async (formData: FormData) => {
         formData.set('taxRate', taxRate.toString());
@@ -31,17 +26,6 @@ export function CreateProjectBtn() {
         setOpen(false);
         setTaxRate(6);
         setCurrency("RUB");
-    }
-
-    if (!mounted) {
-        return (
-            <Button
-                className="text-lg text-black font-bold font-mono bg-linear-90 from-yellow-500 to-orange-600 hover:scale-95 cursor-pointer m-2"
-                disabled
-            >
-                Add project
-            </Button>
-        );
     }
 
     return (

@@ -1,6 +1,6 @@
 import { auth } from "@/lib/auth"
 
-export default auth((req) => {
+export const proxy = auth((req) => {
   const isLoggedIn = !!req.auth
   const isOnAuthPage = req.nextUrl.pathname.startsWith("/auth")
   const isOnApiAuth = req.nextUrl.pathname.startsWith("/api/auth")
@@ -18,5 +18,4 @@ export default auth((req) => {
 
 export const config = {
   matcher: ["/((?!api|_next/static|_next/image|favicon.ico).*)"],
-  runtime: "nodejs",
 }

@@ -15,4 +15,5 @@ export interface ExpenseCreateInput {
   amount: number;
   date: Date;
   category?: string;
+  budgetLimitId?: string;
 }

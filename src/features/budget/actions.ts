@@ -2,15 +2,12 @@
 
 import { prisma } from "@/lib/prisma"
 import { revalidatePath } from "next/cache"
-import { auth } from "@/lib/auth"
+import { requireUser, requireWritableUser } from "@/lib/auth-guard"
 import type { BudgetLimitCreateInput, ExpenseCreateInput } from "@/types/budget"
+import { actionFailure } from "@/lib/action-error"
 
 export async function createBudgetLimit(formData: FormData) {
-  const session = await auth()
-
-  if (!session?.user?.id) {
-    throw new Error("Unauthorized")
-  }
+  const user = await requireWritableUser()
 
   const period = formData.get("period") as string
   const limitAmount = parseFloat(formData.get("limitAmount") as string)
@@ -22,7 +19,7 @@ export async function createBudgetLimit(formData: FormData) {
 
   try {
     const data: BudgetLimitCreateInput = {
-      userId: session.user.id,
+      userId: user.id,
       period,
       limitAmount,
       currency,
@@ -36,7 +33,7 @@ export async function createBudgetLimit(formData: FormData) {
     await prisma.budgetLimit.upsert({
       where: {
         userId_period_month_year: {
-          userId: session.user.id,
+          userId: user.id,
           period,
           month: month ?? 0,
           year,
@@ -49,110 +46,107 @@ export async function createBudgetLimit(formData: FormData) {
       create: data,
     })
 
-    revalidatePath("/")
+    revalidatePath("/dashboard", "layout")
     return { success: true }
   } catch (err) {
-    return { success: false, error: err instanceof Error ? err.message : "Unknown error" }
+    return actionFailure("Create budget limit", err)
   }
 }
 
 export async function updateBudgetSpent(id: string, spentAmount: number) {
-  const session = await auth()
-
-  if (!session?.user?.id) {
-    throw new Error("Unauthorized")
-  }
+  const user = await requireWritableUser()
 
   try {
     await prisma.budgetLimit.update({
-      where: { id, userId: session.user.id },
+      where: { id, userId: user.id },
       data: { spentAmount },
     })
-    revalidatePath("/")
+    revalidatePath("/dashboard", "layout")
     return { success: true }
   } catch (err) {
-    return { success: false, error: err instanceof Error ? err.message : "Unknown error" }
+    return actionFailure("Update budget spent", err)
   }
 }
 
 export async function deleteBudgetLimit(id: string) {
-  const session = await auth()
-
-  if (!session?.user?.id) {
-    throw new Error("Unauthorized")
-  }
+  const user = await requireWritableUser()
 
   try {
     await prisma.budgetLimit.delete({
-      where: { id, userId: session.user.id },
+      where: { id, userId: user.id },
     })
-    revalidatePath("/")
+    revalidatePath("/dashboard", "layout")
     return { success: true }
   } catch (err) {
-    return { success: false, error: err instanceof Error ? err.message : "Unknown error" }
+    return actionFailure("Delete budget limit", err)
   }
 }
 
 export async function addExpense(formData: FormData) {
-  const session = await auth()
-
-  if (!session?.user?.id) {
-    throw new Error("Unauthorized")
-  }
+  const user = await requireWritableUser()
 
   const title = formData.get("title") as string
   const amount = parseFloat(formData.get("amount") as string)
   const date = new Date(formData.get("date") as string)
   const category = formData.get("category") as string || "Other"
+  const budgetLimitId = formData.get("budgetLimitId")
 
   try {
+    let ownedBudgetLimitId: string | undefined
+
+    if (typeof budgetLimitId === "string" && budgetLimitId) {
+      const budgetLimit = await prisma.budgetLimit.findFirst({
+        where: { id: budgetLimitId, userId: user.id },
+        select: { id: true },
+      })
+
+      if (!budgetLimit) {
+        return { success: false, error: "Invalid budget limit" }
+      }
+
+      ownedBudgetLimitId = budgetLimit.id
+    }
+
     const data: ExpenseCreateInput = {
-      userId: session.user.id,
+      userId: user.id,
       title,
       amount,
       date,
       category,
+      budgetLimitId: ownedBudgetLimitId,
     }
 
     await prisma.expense.create({ data })
-    revalidatePath("/")
+    revalidatePath("/dashboard", "layout")
     return { success: true }
   } catch (err) {
-    return { success: false, error: err instanceof Error ? err.message : "Unknown error" }
+    return actionFailure("Add expense", err)
   }
 }
 
 export async function deleteExpense(id: string) {
-  const session = await auth()
-
-  if (!session?.user?.id) {
-    throw new Error("Unauthorized")
-  }
+  const user = await requireWritableUser()
 
   try {
     await prisma.expense.delete({
-      where: { id, userId: session.user.id },
+      where: { id, userId: user.id },
     })
-    revalidatePath("/")
+    revalidatePath("/dashboard", "layout")
     return { success: true }
   } catch (err) {
-    return { success: false, error: err instanceof Error ? err.message : "Unknown error" }
+    return actionFailure("Delete expense", err)
   }
 }
 
 export async function getExpensesForPeriod(month: number, year: number) {
-  const session = await auth()
-
-  if (!session?.user?.id) {
-    return []
-  }
+  const user = await requireUser()
 
   const startDate = new Date(year, month - 1, 1)
   const endDate = new Date(year, month, 0)
 
   const expenses = await prisma.expense.findMany({
     where: {
-      userId: session.user.id,
+      userId: user.id,
       date: {
         gte: startDate,
         lte: endDate,

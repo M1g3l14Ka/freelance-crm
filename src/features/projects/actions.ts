@@ -2,14 +2,11 @@
 
 import { prisma } from "@/lib/prisma"
 import { revalidatePath } from "next/cache"
-import { auth } from "@/lib/auth"
+import { requireWritableUser } from "@/lib/auth-guard"
+import { actionFailure } from "@/lib/action-error"
 
 export async function createProject(formData: FormData) {
-  const session = await auth()
-
-  if (!session?.user?.id) {
-    throw new Error("Unauthorized")
-  }
+  const user = await requireWritableUser()
 
   const title = formData.get('title') as string
   const grossIncome = parseFloat(formData.get('grossIncome') as string)
@@ -22,54 +19,51 @@ export async function createProject(formData: FormData) {
 
   const netIncome = grossIncome - (grossIncome * taxRate / 100)
 
-  await prisma.project.create({
-    data: {
-      title,
-      grossIncome,
-      taxRate,
-      netIncome,
-      currency,
-      status: "ACTIVE",
-      userId: session.user.id
-    }
-  })
+  try {
+    await prisma.project.create({
+      data: {
+        title,
+        grossIncome,
+        taxRate,
+        netIncome,
+        currency,
+        status: "ACTIVE",
+        userId: user.id
+      }
+    })
 
-  revalidatePath("/")
+    revalidatePath("/dashboard", "layout")
+    return { success: true }
+  } catch (err) {
+    return actionFailure("Create project", err)
+  }
 }
 
 export async function deleteProject(id: string) {
-  const session = await auth()
-
-  if (!session?.user?.id) {
-    throw new Error("Unauthorized")
-  }
+  const user = await requireWritableUser()
 
   try {
     await prisma.project.delete({
-      where: { id, userId: session.user.id },
+      where: { id, userId: user.id },
     })
-    revalidatePath("/")
+    revalidatePath("/dashboard", "layout")
     return { success: true }
   } catch (err) {
-    return { success: false, error: err instanceof Error ? err.message : "Unknown error" }
+    return actionFailure("Delete project", err)
   }
 }
 
 export async function updateProjectStatus(id: string, status: string) {
-  const session = await auth()
-
-  if (!session?.user?.id) {
-    throw new Error("Unauthorized")
-  }
+  const user = await requireWritableUser()
 
   try {
     await prisma.project.update({
-      where: { id, userId: session.user.id },
+      where: { id, userId: user.id },
       data: { status },
     })
-    revalidatePath("/")
+    revalidatePath("/dashboard", "layout")
     return { success: true }
   } catch (err) {
-    return { success: false, error: err instanceof Error ? err.message : "Unknown error" }
+    return actionFailure("Update project status", err)
   }
 }

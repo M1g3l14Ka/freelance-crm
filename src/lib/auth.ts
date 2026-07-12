@@ -2,6 +2,7 @@ import NextAuth from "next-auth"
 import Credentials from "next-auth/providers/credentials"
 import { prisma } from "@/lib/prisma"
 import bcrypt from "bcryptjs"
+import { getDemoUserId, isDemoUserId } from "@/lib/demo"
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
   providers: [
@@ -12,12 +13,19 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         password: { label: "Password", type: "password" },
       },
       async authorize(credentials) {
-        if (!credentials?.email || !credentials?.password) {
+        const email = typeof credentials?.email === "string"
+          ? credentials.email.trim().toLowerCase()
+          : ""
+        const password = typeof credentials?.password === "string"
+          ? credentials.password
+          : ""
+
+        if (!email || !password) {
           throw new Error("Email and password are required")
         }
 
         const user = await prisma.user.findUnique({
-          where: { email: credentials.email as string },
+          where: { email },
         })
 
         if (!user || !user.password) {
@@ -25,13 +33,35 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         }
 
         const isMatch = await bcrypt.compare(
-          credentials.password as string,
+          password,
           user.password
         )
 
         if (!isMatch) {
           throw new Error("Invalid email or password")
         }
+
+        return {
+          id: user.id,
+          email: user.email,
+          name: user.name,
+          image: user.image,
+        }
+      },
+    }),
+    Credentials({
+      id: "demo",
+      name: "Demo workspace",
+      credentials: {},
+      async authorize() {
+        const demoUserId = getDemoUserId()
+        if (!demoUserId) return null
+
+        const user = await prisma.user.findUnique({
+          where: { id: demoUserId },
+        })
+
+        if (!user) return null
 
         return {
           id: user.id,
@@ -52,12 +82,14 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     async jwt({ token, user }) {
       if (user) {
         token.id = user.id
+        token.isDemo = isDemoUserId(user.id)
       }
       return token
     },
     async session({ session, token }) {
       if (session.user) {
         session.user.id = token.id as string
+        session.user.isDemo = token.isDemo === true
       }
       return session
     },

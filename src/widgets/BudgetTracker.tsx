@@ -19,19 +19,25 @@ import { AnimatedDiv } from "@/shared/ui/animated"
 
 interface BudgetTrackerProps {
   budgetLimits: BudgetLimit[]
+  readOnly?: boolean
 }
 
-export function BudgetTracker({ budgetLimits }: BudgetTrackerProps) {
+export function BudgetTracker({ budgetLimits, readOnly = false }: BudgetTrackerProps) {
   const [open, setOpen] = useState(false)
   const [expenseOpen, setExpenseOpen] = useState(false)
-  const [mounted, setMounted] = useState(false)
   const [expenses, setExpenses] = useState<Expense[]>([])
 
   useEffect(() => {
-    setMounted(true)
+    let ignore = false
     // Load expenses for current month
     const now = new Date()
-    getExpensesForPeriod(now.getMonth() + 1, now.getFullYear()).then(setExpenses)
+    getExpensesForPeriod(now.getMonth() + 1, now.getFullYear()).then((result) => {
+      if (!ignore) setExpenses(result)
+    })
+
+    return () => {
+      ignore = true
+    }
   }, [])
 
   const currentMonthLimit = budgetLimits.find(
@@ -61,18 +67,6 @@ export function BudgetTracker({ budgetLimits }: BudgetTrackerProps) {
     setExpenses(updated)
   }
 
-  if (!mounted) {
-    return (
-      <Card className="bg-[#050505] border-zinc-800">
-        <CardHeader>
-          <CardTitle className="text-2xl font-bold text-transparent bg-clip-text bg-linear-60 from-yellow-500 to-orange-600">
-            Budget Limits
-          </CardTitle>
-        </CardHeader>
-      </Card>
-    )
-  }
-
   return (
     <Card className="bg-[#050505] border-zinc-800">
       <CardHeader>
@@ -81,7 +75,7 @@ export function BudgetTracker({ budgetLimits }: BudgetTrackerProps) {
             Budget Limits
           </CardTitle>
           <div className="flex gap-2">
-            {currentMonthLimit && (
+            {!readOnly && currentMonthLimit && (
               <Dialog open={expenseOpen} onOpenChange={setExpenseOpen}>
                 <DialogTrigger asChild>
                   <Button className="text-sm text-black font-bold font-mono bg-linear-90 from-green-500 to-emerald-600">
@@ -165,7 +159,7 @@ export function BudgetTracker({ budgetLimits }: BudgetTrackerProps) {
               </Dialog>
             )}
 
-            <Dialog open={open} onOpenChange={setOpen}>
+            {!readOnly && <Dialog open={open} onOpenChange={setOpen}>
               <DialogTrigger asChild>
                 <Button className="text-sm text-black font-bold font-mono bg-linear-90 from-yellow-500 to-orange-600">
                   <Plus size={16} className="mr-2" />
@@ -235,7 +229,7 @@ export function BudgetTracker({ budgetLimits }: BudgetTrackerProps) {
                   </Button>
                 </form>
               </DialogContent>
-            </Dialog>
+            </Dialog>}
           </div>
         </div>
       </CardHeader>
@@ -291,15 +285,17 @@ export function BudgetTracker({ budgetLimits }: BudgetTrackerProps) {
                     {currentMonthLimit.currency}
                   </span>
                 </span>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => deleteBudgetLimit(currentMonthLimit.id)}
-                  className="text-zinc-400 hover:text-red-500"
-                >
-                  <Trash2 size={14} className="mr-1" />
-                  Delete Limit
-                </Button>
+                {!readOnly && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => deleteBudgetLimit(currentMonthLimit.id)}
+                    className="text-zinc-400 hover:text-red-500"
+                  >
+                    <Trash2 size={14} className="mr-1" />
+                    Delete Limit
+                  </Button>
+                )}
               </div>
 
               {/* Expenses List */}
@@ -325,14 +321,16 @@ export function BudgetTracker({ budgetLimits }: BudgetTrackerProps) {
                           <div className="font-bold text-orange-500">
                             {expense.amount.toLocaleString("ru-RU")} {currentMonthLimit.currency}
                           </div>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => handleDeleteExpense(expense.id)}
-                            className="text-zinc-500 hover:text-red-500 h-8 w-8 p-0"
-                          >
-                            <Trash2 size={14} />
-                          </Button>
+                          {!readOnly && (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleDeleteExpense(expense.id)}
+                              className="text-zinc-500 hover:text-red-500 h-8 w-8 p-0"
+                            >
+                              <Trash2 size={14} />
+                            </Button>
+                          )}
                         </div>
                       </div>
                     ))}

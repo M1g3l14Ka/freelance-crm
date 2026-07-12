@@ -8,9 +8,11 @@
     "start": "next start",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
-    "verify": "npm run lint && npm run typecheck && npm run build",
+    "test": "vitest run",
+    "verify": "npm run lint && npm run typecheck && npm run test && npm run build",
     "postinstall": "prisma generate",
     "db:generate": "prisma generate",
+    "db:seed:demo": "node --env-file=.env scripts/seed-demo.mjs",
     "db:migrate:deploy": "prisma migrate deploy"
   },
   "dependencies": {
@@ -44,6 +46,7 @@
     "eslint": "^9",
     "eslint-config-next": "16.1.6",
     "tailwindcss": "^4",
-    "typescript": "^5"
+    "typescript": "^5",
+    "vitest": "^3.2.7"
   }
 }

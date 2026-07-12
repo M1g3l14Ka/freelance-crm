@@ -77,7 +77,8 @@ export default function SignUpPage() {
                 name="password"
                 type="password"
                 required
-                minLength={6}
+                minLength={8}
+                maxLength={128}
                 className="bg-zinc-900 border-zinc-800 text-white"
               />
             </div>
@@ -103,6 +104,5 @@ export default function SignUpPage() {
     </div>
   )
 }
-
 
 

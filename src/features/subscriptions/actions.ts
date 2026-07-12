@@ -2,14 +2,11 @@
 
 import { prisma } from "@/lib/prisma"
 import { revalidatePath } from "next/cache"
-import { auth } from "@/lib/auth"
+import { requireWritableUser } from "@/lib/auth-guard"
+import { actionFailure } from "@/lib/action-error"
 
 export async function createSubscription(formData: FormData) {
-  const session = await auth()
-
-  if (!session?.user?.id) {
-    throw new Error("Unauthorized")
-  }
+  const user = await requireWritableUser()
 
   const title = formData.get("title") as string
   const amount = parseFloat(formData.get("amount") as string)
@@ -21,52 +18,50 @@ export async function createSubscription(formData: FormData) {
     return
   }
 
-  await prisma.subscription.create({
-    data: {
-      title,
-      amount,
-      intervalDays,
-      nextPaymentDate,
-      currency,
-      userId: session.user.id,
-    },
-  })
+  try {
+    await prisma.subscription.create({
+      data: {
+        title,
+        amount,
+        intervalDays,
+        nextPaymentDate,
+        currency,
+        userId: user.id,
+      },
+    })
 
-  revalidatePath("/")
+    revalidatePath("/dashboard", "layout")
+    return { success: true }
+  } catch (err) {
+    return actionFailure("Create subscription", err)
+  }
 }
 
 export async function deleteSubscription(id: string) {
-  const session = await auth()
-
-  if (!session?.user?.id) {
-    throw new Error("Unauthorized")
-  }
+  const user = await requireWritableUser()
 
   try {
     await prisma.subscription.delete({
-      where: { id, userId: session.user.id },
+      where: { id, userId: user.id },
     })
-    revalidatePath("/")
+    revalidatePath("/dashboard", "layout")
     return { success: true }
   } catch (err) {
-    return { success: false, error: err instanceof Error ? err.message : "Unknown error" }
+    return actionFailure("Delete subscription", err)
   }
 }
 
 export async function updateSubscriptionDates() {
-  const session = await auth()
+  const user = await requireWritableUser()
 
-  if (!session?.user?.id) {
-    throw new Error("Unauthorized")
-  }
+  try {
+    const subscriptions = await prisma.subscription.findMany({
+      where: { userId: user.id },
+    })
 
-  const subscriptions = await prisma.subscription.findMany({
-    where: { userId: session.user.id },
-  })
+    const today = new Date()
 
-  const today = new Date()
-
-  for (const sub of subscriptions) {
+    for (const sub of subscriptions) {
     const nextDate = new Date(sub.nextPaymentDate)
 
     // If payment date has passed or is today
@@ -89,12 +84,16 @@ export async function updateSubscriptionDates() {
         }
       }
 
-      await prisma.subscription.update({
-        where: { id: sub.id },
-        data: { nextPaymentDate: newDate },
-      })
+        await prisma.subscription.update({
+          where: { id: sub.id, userId: user.id },
+          data: { nextPaymentDate: newDate },
+        })
+      }
     }
-  }
 
-  revalidatePath("/")
+    revalidatePath("/dashboard", "layout")
+    return { success: true }
+  } catch (err) {
+    return actionFailure("Update subscription dates", err)
+  }
 }

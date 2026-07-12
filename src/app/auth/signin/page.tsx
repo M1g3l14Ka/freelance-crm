@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useActionState, useState } from "react"
 import { signIn } from "next-auth/react"
 import { useRouter } from "next/navigation"
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card"
@@ -8,11 +8,15 @@ import { Button } from "@/shared/ui/button"
 import { Input } from "@/shared/ui/input"
 import { Label } from "@/shared/ui/label"
 import Link from "next/link"
+import { signInToDemo } from "./actions"
 
 export default function SignInPage() {
   const router = useRouter()
   const [error, setError] = useState("")
   const [loading, setLoading] = useState(false)
+  const [demoState, demoAction, demoPending] = useActionState(signInToDemo, {
+    error: null,
+  })
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
@@ -33,7 +37,7 @@ export default function SignInPage() {
       if (result?.error) {
         setError(result.error)
       } else {
-        router.push("/")
+        router.push("/dashboard")
         router.refresh()
       }
     } catch {
@@ -85,8 +89,28 @@ export default function SignInPage() {
               {loading ? "Signing in..." : "Sign In"}
             </Button>
           </form>
+          <div className="my-4 flex items-center gap-3" aria-hidden="true">
+            <div className="h-px flex-1 bg-zinc-800" />
+            <span className="text-xs text-zinc-500">or</span>
+            <div className="h-px flex-1 bg-zinc-800" />
+          </div>
+          <form action={demoAction}>
+            <Button
+              type="submit"
+              variant="outline"
+              disabled={demoPending}
+              className="w-full border-zinc-700 bg-zinc-900 text-white hover:bg-zinc-800"
+            >
+              {demoPending ? "Opening demo..." : "View demo workspace"}
+            </Button>
+            {demoState.error && (
+              <p className="mt-2 text-center text-sm text-red-500" role="alert">
+                {demoState.error}
+              </p>
+            )}
+          </form>
           <p className="mt-4 text-center text-zinc-400 text-sm">
-            Don't have an account?{" "}
+            Don&apos;t have an account?{" "}
             <Link href="/auth/signup" className="text-orange-500 hover:underline">
               Sign Up
             </Link>
@@ -96,7 +120,5 @@ export default function SignInPage() {
     </div>
   )
 }
-
-
 
 

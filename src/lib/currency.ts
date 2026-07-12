@@ -2,7 +2,11 @@ import { prisma } from "./prisma";
 
 export type Currency = "RUB" | "USD" | "EUR" | "KZT" | "BYN";
 
-export const CURRENCIES: Currency[] = ["RUB", "USD", "EUR", "KZT", "BYN"];
+export const CURRENCIES: readonly Currency[] = ["RUB", "USD", "EUR", "KZT", "BYN"];
+
+export function isCurrency(value: string): value is Currency {
+  return CURRENCIES.some((currency) => currency === value);
+}
 
 export const CURRENCY_SYMBOLS: Record<Currency, string> = {
   RUB: "₽",
