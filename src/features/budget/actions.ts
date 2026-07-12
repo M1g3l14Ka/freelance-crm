@@ -2,11 +2,12 @@
 
 import { prisma } from "@/lib/prisma"
 import { revalidatePath } from "next/cache"
-import { requireUser } from "@/lib/auth-guard"
+import { requireUser, requireWritableUser } from "@/lib/auth-guard"
 import type { BudgetLimitCreateInput, ExpenseCreateInput } from "@/types/budget"
+import { actionFailure } from "@/lib/action-error"
 
 export async function createBudgetLimit(formData: FormData) {
-  const user = await requireUser()
+  const user = await requireWritableUser()
 
   const period = formData.get("period") as string
   const limitAmount = parseFloat(formData.get("limitAmount") as string)
@@ -48,12 +49,12 @@ export async function createBudgetLimit(formData: FormData) {
     revalidatePath("/")
     return { success: true }
   } catch (err) {
-    return { success: false, error: err instanceof Error ? err.message : "Unknown error" }
+    return actionFailure("Create budget limit", err)
   }
 }
 
 export async function updateBudgetSpent(id: string, spentAmount: number) {
-  const user = await requireUser()
+  const user = await requireWritableUser()
 
   try {
     await prisma.budgetLimit.update({
@@ -63,12 +64,12 @@ export async function updateBudgetSpent(id: string, spentAmount: number) {
     revalidatePath("/")
     return { success: true }
   } catch (err) {
-    return { success: false, error: err instanceof Error ? err.message : "Unknown error" }
+    return actionFailure("Update budget spent", err)
   }
 }
 
 export async function deleteBudgetLimit(id: string) {
-  const user = await requireUser()
+  const user = await requireWritableUser()
 
   try {
     await prisma.budgetLimit.delete({
@@ -77,12 +78,12 @@ export async function deleteBudgetLimit(id: string) {
     revalidatePath("/")
     return { success: true }
   } catch (err) {
-    return { success: false, error: err instanceof Error ? err.message : "Unknown error" }
+    return actionFailure("Delete budget limit", err)
   }
 }
 
 export async function addExpense(formData: FormData) {
-  const user = await requireUser()
+  const user = await requireWritableUser()
 
   const title = formData.get("title") as string
   const amount = parseFloat(formData.get("amount") as string)
@@ -119,12 +120,12 @@ export async function addExpense(formData: FormData) {
     revalidatePath("/")
     return { success: true }
   } catch (err) {
-    return { success: false, error: err instanceof Error ? err.message : "Unknown error" }
+    return actionFailure("Add expense", err)
   }
 }
 
 export async function deleteExpense(id: string) {
-  const user = await requireUser()
+  const user = await requireWritableUser()
 
   try {
     await prisma.expense.delete({
@@ -133,7 +134,7 @@ export async function deleteExpense(id: string) {
     revalidatePath("/")
     return { success: true }
   } catch (err) {
-    return { success: false, error: err instanceof Error ? err.message : "Unknown error" }
+    return actionFailure("Delete expense", err)
   }
 }
 
