@@ -124,6 +124,16 @@ npm run dev
 ### 6. Open in browser
 Navigate to **http://localhost:3000/**
 
+### Optional read-only demo workspace
+
+Set `DEMO_USER_ID` to a stable, dedicated identifier, then provision fabricated demo data explicitly:
+
+```bash
+npm run db:seed:demo
+```
+
+The seed is idempotent and never runs during install, build, or application startup. The configured demo account has no password, is signed in only through the server-side demo flow, cannot mutate user data, and cannot call Gemini.
+
 ---
 
 ## Production Deployment (Vercel + Turso)

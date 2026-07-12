@@ -12,6 +12,7 @@
     "verify": "npm run lint && npm run typecheck && npm run test && npm run build",
     "postinstall": "prisma generate",
     "db:generate": "prisma generate",
+    "db:seed:demo": "node scripts/seed-demo.mjs",
     "db:migrate:deploy": "prisma migrate deploy"
   },
   "dependencies": {
