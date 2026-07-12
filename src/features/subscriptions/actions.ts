@@ -2,14 +2,10 @@
 
 import { prisma } from "@/lib/prisma"
 import { revalidatePath } from "next/cache"
-import { auth } from "@/lib/auth"
+import { requireUser } from "@/lib/auth-guard"
 
 export async function createSubscription(formData: FormData) {
-  const session = await auth()
-
-  if (!session?.user?.id) {
-    throw new Error("Unauthorized")
-  }
+  const user = await requireUser()
 
   const title = formData.get("title") as string
   const amount = parseFloat(formData.get("amount") as string)
@@ -28,7 +24,7 @@ export async function createSubscription(formData: FormData) {
       intervalDays,
       nextPaymentDate,
       currency,
-      userId: session.user.id,
+      userId: user.id,
     },
   })
 
@@ -36,15 +32,11 @@ export async function createSubscription(formData: FormData) {
 }
 
 export async function deleteSubscription(id: string) {
-  const session = await auth()
-
-  if (!session?.user?.id) {
-    throw new Error("Unauthorized")
-  }
+  const user = await requireUser()
 
   try {
     await prisma.subscription.delete({
-      where: { id, userId: session.user.id },
+      where: { id, userId: user.id },
     })
     revalidatePath("/")
     return { success: true }
@@ -54,14 +46,10 @@ export async function deleteSubscription(id: string) {
 }
 
 export async function updateSubscriptionDates() {
-  const session = await auth()
-
-  if (!session?.user?.id) {
-    throw new Error("Unauthorized")
-  }
+  const user = await requireUser()
 
   const subscriptions = await prisma.subscription.findMany({
-    where: { userId: session.user.id },
+    where: { userId: user.id },
   })
 
   const today = new Date()
@@ -90,7 +78,7 @@ export async function updateSubscriptionDates() {
       }
 
       await prisma.subscription.update({
-        where: { id: sub.id },
+        where: { id: sub.id, userId: user.id },
         data: { nextPaymentDate: newDate },
       })
     }
