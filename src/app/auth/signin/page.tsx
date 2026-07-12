@@ -56,13 +56,14 @@ export default function SignInPage() {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form method="post" onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
               <Label className="text-transparent bg-clip-text bg-linear-60 from-yellow-500 to-orange-600" htmlFor="Email">Email</Label>
               <Input
                 id="email"
                 name="email"
                 type="email"
+                autoComplete="email"
                 placeholder="you@example.com"
                 required
                 className="bg-zinc-900 border-zinc-800 text-white"
@@ -74,6 +75,7 @@ export default function SignInPage() {
                 id="password"
                 name="password"
                 type="password"
+                autoComplete="current-password"
                 required
                 className="bg-zinc-900 border-zinc-800 text-white"
               />
