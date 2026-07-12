@@ -29,9 +29,9 @@ export function SubscriptionCalendar({ subscriptions, readOnly = false }: Subscr
   }
 
   const getStatusColor = (days: number) => {
-    if (days < 0) return "text-red-500 bg-red-500/10"
-    if (days <= 3) return "text-orange-500 bg-orange-500/10"
-    return "text-green-500 bg-green-500/10"
+    if (days < 0) return "border-destructive/20 bg-destructive/10 text-destructive"
+    if (days <= 3) return "border-warning/20 bg-warning/10 text-warning"
+    return "border-success/20 bg-success/10 text-success"
   }
 
   const getStatusText = (days: number) => {
@@ -48,9 +48,9 @@ export function SubscriptionCalendar({ subscriptions, readOnly = false }: Subscr
   )
 
   return (
-    <Card className="bg-[#050505] border-zinc-800">
+    <Card>
       <CardHeader>
-        <CardTitle className="text-2xl font-bold text-transparent bg-clip-text bg-linear-60 from-yellow-500 to-orange-600">
+        <CardTitle>
           Payment Calendar
         </CardTitle>
       </CardHeader>
@@ -66,25 +66,25 @@ export function SubscriptionCalendar({ subscriptions, readOnly = false }: Subscr
                   <div
                     className={`flex items-center justify-between p-4 rounded-lg border ${
                       days <= 0
-                        ? "border-red-500/50 bg-red-500/5"
+                        ? "border-destructive/20 bg-destructive/5"
                         : days <= 3
-                        ? "border-orange-500/50 bg-orange-500/5"
-                        : "border-zinc-800 bg-zinc-900/50"
+                        ? "border-warning/20 bg-warning/5"
+                        : "border-border bg-surface-elevated/50"
                     }`}
                   >
                     <div className="flex items-center gap-3">
                       <Calendar
                         className={`w-5 h-5 ${
                           days <= 0
-                            ? "text-red-500"
+                            ? "text-destructive"
                             : days <= 3
-                            ? "text-orange-500"
-                            : "text-zinc-400"
+                            ? "text-warning"
+                            : "text-text-secondary"
                         }`}
                       />
                       <div>
-                        <div className="font-bold text-white">{sub.title}</div>
-                        <div className="text-sm text-zinc-400">
+                        <div className="font-medium text-text-primary">{sub.title}</div>
+                        <div className="text-sm text-text-secondary">
                           {sub.amount.toLocaleString("ru-RU")} {sub.currency} •
                           Interval: {sub.intervalDays} days
                         </div>
@@ -92,16 +92,16 @@ export function SubscriptionCalendar({ subscriptions, readOnly = false }: Subscr
                     </div>
                     <div className="flex items-center gap-3">
                       <div
-                        className={`px-3 py-1 rounded-full text-xs font-bold ${statusColor}`}
+                        className={`rounded-full border px-3 py-1 text-xs font-medium ${statusColor}`}
                       >
                         {getStatusText(days)}
                       </div>
                       {!readOnly && (
                         <Button
-                          variant="ghost"
                           size="icon"
                           onClick={() => deleteSubscription(sub.id)}
-                          className="text-zinc-400 hover:text-red-500"
+                          variant="destructive"
+                          className="text-destructive"
                         >
                           <Trash2 size={16} />
                         </Button>
@@ -113,7 +113,7 @@ export function SubscriptionCalendar({ subscriptions, readOnly = false }: Subscr
             })}
           </div>
         ) : (
-          <div className="text-center text-zinc-500 py-8">
+          <div className="py-10 text-center text-text-muted">
             No active subscriptions
           </div>
         )}

@@ -52,11 +52,11 @@ export function AIAnalytics({ readOnly = false }: { readOnly?: boolean }) {
 
   return (
     <AnimatedDiv delay={0.5}>
-      <Card className="bg-[#050505] border-zinc-800">
+      <Card>
         <CardHeader>
           <div className="flex items-center gap-2">
-            <Sparkles className="w-6 h-6 text-orange-500" />
-            <CardTitle className="text-2xl font-bold text-transparent bg-clip-text bg-linear-60 from-yellow-500 to-orange-600">
+            <Sparkles className="h-5 w-5 text-accent" />
+            <CardTitle>
               AI Analytics
             </CardTitle>
           </div>
@@ -68,21 +68,20 @@ export function AIAnalytics({ readOnly = false }: { readOnly?: boolean }) {
               onChange={(e) => setQuestion(e.target.value)}
               onKeyPress={handleKeyPress}
               placeholder="Ask AI about your finances..."
-              className="bg-zinc-900 border-zinc-800 text-white flex-1"
+              className="flex-1"
               disabled={isLoading || readOnly}
             />
             <Button
               onClick={() => handleAsk()}
               disabled={isLoading || readOnly || !question.trim()}
               title={readOnly ? "AI requests are disabled in the public demo" : undefined}
-              className="bg-orange-500 hover:bg-orange-600 text-black font-bold"
             >
               {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
             </Button>
           </div>
 
           {readOnly && (
-            <p className="text-sm text-zinc-500" role="note">
+            <p className="text-sm text-text-muted" role="note">
               AI requests are disabled in the public demo.
             </p>
           )}
@@ -94,7 +93,7 @@ export function AIAnalytics({ readOnly = false }: { readOnly?: boolean }) {
                   key={i}
                   variant="outline"
                   onClick={() => handleAsk(item.text)}
-                  className="border-zinc-700 bg-zinc-900 text-zinc-400 hover:text-white hover:bg-zinc-800 text-sm"
+                  className="text-sm"
                 >
                   <item.icon className="w-4 h-4 mr-2" />
                   {item.text}
@@ -106,16 +105,16 @@ export function AIAnalytics({ readOnly = false }: { readOnly?: boolean }) {
           {(answer || isLoading) && (
             <div className="space-y-4">
               {isLoading && (
-                <div className="flex items-center gap-2 text-zinc-400">
+                <div className="flex items-center gap-2 text-text-secondary">
                   <Loader2 className="w-4 h-4 animate-spin" />
                   <span>AI analyzes your data...</span>
                 </div>
               )}
 
               {answer && (
-                <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-4 max-h-150 overflow-y-auto">
+                <div className="max-h-150 overflow-y-auto rounded-lg border border-border bg-surface-elevated p-4">
                   <div className="prose prose-invert max-w-none">
-                    <div className="text-white whitespace-pre-wrap text-sm leading-relaxed">{answer}</div>
+                    <div className="whitespace-pre-wrap text-sm leading-relaxed text-text-primary">{answer}</div>
                   </div>
                 </div>
               )}
@@ -123,13 +122,13 @@ export function AIAnalytics({ readOnly = false }: { readOnly?: boolean }) {
           )}
 
           {history.length > 0 && (
-            <div className="space-y-2 pt-4 border-t border-zinc-800">
-              <h4 className="text-sm text-zinc-400">Query history:</h4>
+            <div className="space-y-2 border-t border-border pt-4">
+              <h4 className="text-sm text-text-secondary">Query history:</h4>
               <div className="space-y-2 max-h-80 overflow-y-auto">
                 {history.slice(-5).map((item, i) => (
-                  <div key={i} className="text-sm bg-zinc-900 rounded p-2">
-                    <div className="text-orange-500 font-medium">{item.question}</div>
-                    <div className="text-zinc-400 line-clamp-3">{item.answer.substring(0, 150)}...</div>
+                  <div key={i} className="rounded-lg border border-border bg-surface-elevated p-3 text-sm">
+                    <div className="font-medium text-accent">{item.question}</div>
+                    <div className="line-clamp-3 text-text-secondary">{item.answer.substring(0, 150)}...</div>
                   </div>
                 ))}
               </div>

@@ -68,29 +68,29 @@ export function BudgetTracker({ budgetLimits, readOnly = false }: BudgetTrackerP
   }
 
   return (
-    <Card className="bg-[#050505] border-zinc-800">
+    <Card>
       <CardHeader>
         <div className="flex justify-between items-center flex-wrap gap-2">
-          <CardTitle className="text-2xl font-bold text-transparent bg-clip-text bg-linear-60 from-yellow-500 to-orange-600">
+          <CardTitle>
             Budget Limits
           </CardTitle>
           <div className="flex gap-2">
             {!readOnly && currentMonthLimit && (
               <Dialog open={expenseOpen} onOpenChange={setExpenseOpen}>
                 <DialogTrigger asChild>
-                  <Button className="text-sm text-black font-bold font-mono bg-linear-90 from-green-500 to-emerald-600">
+                  <Button variant="secondary">
                     <CreditCard size={16} className="mr-2" />
                     Expense
                   </Button>
                 </DialogTrigger>
-                <DialogContent className="font-mono font-bold text-white bg-[#050505] border">
-                  <DialogHeader className="border-b p-2 flex justify-center items-center">
+                <DialogContent>
+                  <DialogHeader className="border-b border-border pb-4">
                     <DialogTitle>Add Expense</DialogTitle>
                   </DialogHeader>
 
                   <form action={handleAddExpense} className="space-y-4 pt-4">
                     <div className="space-y-2">
-                      <Label htmlFor="title" className="text-zinc-300">
+                      <Label htmlFor="title">
                         Description
                       </Label>
                       <Input
@@ -98,12 +98,11 @@ export function BudgetTracker({ budgetLimits, readOnly = false }: BudgetTrackerP
                         name="title"
                         placeholder="Netflix, Rent, Food..."
                         required
-                        className="bg-zinc-900 border-zinc-800 text-white"
                       />
                     </div>
 
                     <div className="space-y-2">
-                      <Label htmlFor="amount" className="text-zinc-300">
+                      <Label htmlFor="amount">
                         Amount (₽)
                       </Label>
                       <Input
@@ -112,12 +111,12 @@ export function BudgetTracker({ budgetLimits, readOnly = false }: BudgetTrackerP
                         type="number"
                         placeholder="5000"
                         required
-                        className="[&::-webkit-inner-spin-button]:appearance-none bg-zinc-900 border-zinc-800 text-white"
+                        className="[&::-webkit-inner-spin-button]:appearance-none"
                       />
                     </div>
 
                     <div className="space-y-2">
-                      <Label htmlFor="date" className="text-zinc-300">
+                      <Label htmlFor="date">
                         Date
                       </Label>
                       <Input
@@ -126,18 +125,17 @@ export function BudgetTracker({ budgetLimits, readOnly = false }: BudgetTrackerP
                         type="date"
                         defaultValue={new Date().toISOString().split('T')[0]}
                         required
-                        className="bg-zinc-900 border-zinc-800 text-white"
                       />
                     </div>
 
                     <div className="space-y-2">
-                      <Label htmlFor="category" className="text-zinc-300">
+                      <Label htmlFor="category">
                         Category
                       </Label>
                       <select
                         id="category"
                         name="category"
-                        className="w-full rounded-md border border-zinc-800 bg-zinc-900 px-3 py-2 text-white"
+                        className="app-select"
                       >
                         <option value="Food">Food</option>
                         <option value="Transport">Transport</option>
@@ -150,7 +148,7 @@ export function BudgetTracker({ budgetLimits, readOnly = false }: BudgetTrackerP
 
                     <Button
                       type="submit"
-                      className="w-full text-lg text-black font-bold font-mono bg-linear-90 from-green-500 to-emerald-600 hover:scale-95 cursor-pointer"
+                      className="w-full"
                     >
                       Add Expense
                     </Button>
@@ -161,13 +159,13 @@ export function BudgetTracker({ budgetLimits, readOnly = false }: BudgetTrackerP
 
             {!readOnly && <Dialog open={open} onOpenChange={setOpen}>
               <DialogTrigger asChild>
-                <Button className="text-sm text-black font-bold font-mono bg-linear-90 from-yellow-500 to-orange-600">
+                <Button>
                   <Plus size={16} className="mr-2" />
                   Limit
                 </Button>
               </DialogTrigger>
-              <DialogContent className="font-mono font-bold text-white bg-[#050505] border">
-                <DialogHeader className="border-b p-2 flex justify-center items-center">
+              <DialogContent>
+                <DialogHeader className="border-b border-border pb-4">
                   <DialogTitle>Set Limit</DialogTitle>
                 </DialogHeader>
 
@@ -179,13 +177,13 @@ export function BudgetTracker({ budgetLimits, readOnly = false }: BudgetTrackerP
                   className="space-y-4 pt-4"
                 >
                   <div className="space-y-2">
-                    <Label htmlFor="period" className="text-zinc-300">
+                    <Label htmlFor="period">
                       Period
                     </Label>
                     <select
                       id="period"
                       name="period"
-                      className="w-full rounded-md border border-zinc-800 bg-zinc-900 px-3 py-2 text-white"
+                      className="app-select"
                     >
                       <option value="month">Month</option>
                       <option value="year">Year</option>
@@ -193,7 +191,7 @@ export function BudgetTracker({ budgetLimits, readOnly = false }: BudgetTrackerP
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="limitAmount" className="text-zinc-300">
+                    <Label htmlFor="limitAmount">
                       Amount limit (₽)
                     </Label>
                     <Input
@@ -202,18 +200,18 @@ export function BudgetTracker({ budgetLimits, readOnly = false }: BudgetTrackerP
                       type="number"
                       placeholder="100000"
                       required
-                      className="[&::-webkit-inner-spin-button]:appearance-none bg-zinc-900 border-zinc-800 text-white"
+                      className="[&::-webkit-inner-spin-button]:appearance-none"
                     />
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="currency" className="text-zinc-300">
+                    <Label htmlFor="currency">
                       Currency
                     </Label>
                     <select
                       id="currency"
                       name="currency"
-                      className="w-full rounded-md border border-zinc-800 bg-zinc-900 px-3 py-2 text-white"
+                      className="app-select"
                     >
                       <option value="RUB">₽ RUB</option>
                       <option value="USD">$ USD</option>
@@ -223,7 +221,7 @@ export function BudgetTracker({ budgetLimits, readOnly = false }: BudgetTrackerP
 
                   <Button
                     type="submit"
-                    className="w-full text-lg text-black font-bold font-mono bg-linear-90 from-yellow-500 to-orange-600 hover:scale-95 cursor-pointer"
+                    className="w-full"
                   >
                     Save
                   </Button>
@@ -240,17 +238,17 @@ export function BudgetTracker({ budgetLimits, readOnly = false }: BudgetTrackerP
               {/* Stats */}
               <div className="flex justify-between items-center">
                 <div>
-                  <div className="text-zinc-400 text-sm">
+                  <div className="text-sm text-text-secondary">
                     Spent this month
                   </div>
-                  <div className="text-2xl font-bold text-white">
+                  <div className="text-2xl font-semibold tabular-nums text-text-primary">
                     {spentThisMonth.toLocaleString("ru-RU")}{" "}
                     {currentMonthLimit.currency}
                   </div>
                 </div>
                 <div className="text-right">
-                  <div className="text-zinc-400 text-sm">Limit</div>
-                  <div className="text-2xl font-bold text-orange-500">
+                  <div className="text-sm text-text-secondary">Limit</div>
+                  <div className="text-2xl font-semibold tabular-nums text-text-primary">
                     {currentMonthLimit.limitAmount.toLocaleString("ru-RU")}{" "}
                     {currentMonthLimit.currency}
                   </div>
@@ -258,12 +256,12 @@ export function BudgetTracker({ budgetLimits, readOnly = false }: BudgetTrackerP
               </div>
 
               {/* Progress bar */}
-              <div className="relative h-4 bg-zinc-800 rounded-full overflow-hidden">
+              <div className="relative h-2 overflow-hidden rounded-full bg-muted">
                 <div
-                  className={`absolute top-0 left-0 h-full transition-all duration-500 ${
+                  className={`absolute top-0 left-0 h-full transition-[width] duration-300 ${
                     spentThisMonth / currentMonthLimit.limitAmount > 0.9
-                      ? "bg-linear-to-r from-red-500 to-orange-500"
-                      : "bg-linear-to-r from-yellow-500 to-orange-500"
+                      ? "bg-destructive"
+                      : "bg-accent"
                   }`}
                   style={{
                     width: `${Math.min(
@@ -276,9 +274,9 @@ export function BudgetTracker({ budgetLimits, readOnly = false }: BudgetTrackerP
 
               {/* Remaining */}
               <div className="flex justify-between text-sm">
-                <span className="text-zinc-400">
+                <span className="text-text-secondary">
                   Remaining:{" "}
-                  <span className="text-white font-bold">
+                  <span className="font-semibold text-text-primary">
                     {(
                       currentMonthLimit.limitAmount - spentThisMonth
                     ).toLocaleString("ru-RU")}{" "}
@@ -287,10 +285,9 @@ export function BudgetTracker({ budgetLimits, readOnly = false }: BudgetTrackerP
                 </span>
                 {!readOnly && (
                   <Button
-                    variant="ghost"
+                    variant="destructive"
                     size="sm"
                     onClick={() => deleteBudgetLimit(currentMonthLimit.id)}
-                    className="text-zinc-400 hover:text-red-500"
                   >
                     <Trash2 size={14} className="mr-1" />
                     Delete Limit
@@ -300,33 +297,33 @@ export function BudgetTracker({ budgetLimits, readOnly = false }: BudgetTrackerP
 
               {/* Expenses List */}
               {expenses.length > 0 && (
-                <div className="mt-6 pt-6 border-t border-zinc-800">
-                  <h4 className="text-sm font-bold text-zinc-400 mb-3">Expenses This Month</h4>
+                <div className="mt-6 border-t border-border pt-6">
+                  <h4 className="mb-3 text-sm font-semibold text-text-secondary">Expenses this month</h4>
                   <div className="space-y-2">
                     {expenses.map((expense) => (
                       <div
                         key={expense.id}
-                        className="flex items-center justify-between p-3 bg-zinc-900 rounded-lg border border-zinc-800"
+                        className="flex items-center justify-between rounded-lg border border-border bg-surface-elevated p-3"
                       >
                         <div className="flex items-center gap-3">
-                          <CreditCard className="w-4 h-4 text-zinc-500" />
+                          <CreditCard className="h-4 w-4 text-text-muted" />
                           <div>
-                            <div className="font-medium text-white">{expense.title}</div>
-                            <div className="text-xs text-zinc-500">
+                            <div className="font-medium text-text-primary">{expense.title}</div>
+                            <div className="text-xs text-text-muted">
                               {expense.category} • {new Date(expense.date).toLocaleDateString("en-US", { month: 'short', day: 'numeric' })}
                             </div>
                           </div>
                         </div>
                         <div className="flex items-center gap-3">
-                          <div className="font-bold text-orange-500">
+                          <div className="font-semibold tabular-nums text-text-primary">
                             {expense.amount.toLocaleString("ru-RU")} {currentMonthLimit.currency}
                           </div>
                           {!readOnly && (
                             <Button
-                              variant="ghost"
+                              variant="destructive"
                               size="sm"
                               onClick={() => handleDeleteExpense(expense.id)}
-                              className="text-zinc-500 hover:text-red-500 h-8 w-8 p-0"
+                              className="h-8 w-8 p-0"
                             >
                               <Trash2 size={14} />
                             </Button>
@@ -340,7 +337,7 @@ export function BudgetTracker({ budgetLimits, readOnly = false }: BudgetTrackerP
             </div>
           </AnimatedDiv>
         ) : (
-          <div className="text-center text-zinc-500 py-8">
+          <div className="py-10 text-center text-text-muted">
             <TrendingUp className="w-12 h-12 mx-auto mb-2 opacity-50" />
             <div>No limits set</div>
             <div className="text-sm">

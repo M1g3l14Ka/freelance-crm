@@ -23,7 +23,7 @@ export function DashboardNavigation({ mobile = false }: { mobile?: boolean }) {
 
   return (
     <nav aria-label={mobile ? "Mobile dashboard navigation" : "Dashboard navigation"}>
-      <ul className={mobile ? "flex min-w-max gap-1" : "space-y-1"}>
+      <ul className={mobile ? "flex min-w-max gap-1.5" : "space-y-1.5"}>
         {items.map((item) => {
           const active = isDashboardRouteActive(pathname, item.href)
           return (
@@ -31,10 +31,10 @@ export function DashboardNavigation({ mobile = false }: { mobile?: boolean }) {
               <Link
                 href={item.href}
                 aria-current={active ? "page" : undefined}
-                className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
+                className={`flex h-10 items-center gap-3 rounded-lg px-3 text-sm font-medium transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40 ${
                   active
-                    ? "bg-orange-500 text-black"
-                    : "text-zinc-400 hover:bg-zinc-900 hover:text-white"
+                    ? "bg-accent text-accent-foreground"
+                    : "text-text-secondary hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
                 } ${mobile ? "whitespace-nowrap" : "w-full"}`}
               >
                 <item.icon className="h-4 w-4" aria-hidden="true" />

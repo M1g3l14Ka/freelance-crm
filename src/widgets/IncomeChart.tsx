@@ -51,15 +51,15 @@ export function IncomeChart({ projects }: IncomeChartProps) {
   }, [projects, period, incomeType, primaryCurrency])
 
   return (
-    <Card className="bg-[#050505] border-zinc-800">
+    <Card>
       <CardHeader>
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-          <CardTitle className="text-2xl font-bold text-transparent bg-clip-text bg-linear-60 from-yellow-500 to-orange-600">
+          <CardTitle>
             Income Chart
           </CardTitle>
           <div className="flex flex-wrap gap-2">
             {/* Period */}
-            <div className="flex gap-1 bg-zinc-900 rounded-lg p-1">
+            <div className="app-segment">
               {(["day", "week", "month", "year"] as Period[]).map((p) => (
                 <Button
                   key={p}
@@ -68,8 +68,8 @@ export function IncomeChart({ projects }: IncomeChartProps) {
                   variant={period === p ? "default" : "ghost"}
                   className={
                     period === p
-                      ? "bg-orange-500 hover:bg-orange-600 text-black font-bold"
-                      : "text-zinc-400 hover:text-white"
+                      ? "bg-accent text-accent-foreground hover:bg-accent-hover"
+                      : ""
                   }
                 >
                   {p === "day" ? "Day" : p === "week" ? "Week" : p === "month" ? "Month" : "Year"}
@@ -78,7 +78,7 @@ export function IncomeChart({ projects }: IncomeChartProps) {
             </div>
 
             {/* Income type */}
-            <div className="flex gap-1 bg-zinc-900 rounded-lg p-1">
+            <div className="app-segment">
               {(["gross", "net"] as IncomeType[]).map((type) => (
                 <Button
                   key={type}
@@ -87,8 +87,8 @@ export function IncomeChart({ projects }: IncomeChartProps) {
                   variant={incomeType === type ? "default" : "ghost"}
                   className={
                     incomeType === type
-                      ? "bg-orange-500 hover:bg-orange-600 text-black font-bold"
-                      : "text-zinc-400 hover:text-white"
+                      ? "bg-accent text-accent-foreground hover:bg-accent-hover"
+                      : ""
                   }
                 >
                   {type === "gross" ? "Gross" : "Net"}
@@ -97,15 +97,15 @@ export function IncomeChart({ projects }: IncomeChartProps) {
             </div>
 
             {/* Chart type */}
-            <div className="flex gap-1 bg-zinc-900 rounded-lg p-1">
+            <div className="app-segment">
               <Button
                 size="sm"
                 onClick={() => setChartType("bar")}
                 variant={chartType === "bar" ? "default" : "ghost"}
                 className={
                   chartType === "bar"
-                    ? "bg-orange-500 hover:bg-orange-600 text-black font-bold"
-                    : "text-zinc-400 hover:text-white"
+                    ? "bg-accent text-accent-foreground hover:bg-accent-hover"
+                    : ""
                 }
               >
                 Bar
@@ -116,8 +116,8 @@ export function IncomeChart({ projects }: IncomeChartProps) {
                 variant={chartType === "line" ? "default" : "ghost"}
                 className={
                   chartType === "line"
-                    ? "bg-orange-500 hover:bg-orange-600 text-black font-bold"
-                    : "text-zinc-400 hover:text-white"
+                    ? "bg-accent text-accent-foreground hover:bg-accent-hover"
+                    : ""
                 }
               >
                 Line
@@ -127,31 +127,31 @@ export function IncomeChart({ projects }: IncomeChartProps) {
         </div>
       </CardHeader>
       <CardContent>
-        <div className="h-100">
+        <div className="h-80 min-w-0 sm:h-96">
           <ResponsiveContainer width="100%" height="100%">
             {chartType === "bar" ? (
               <BarChart data={groupedData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#333" fill="none" />
+                <CartesianGrid strokeDasharray="3 3" stroke="#2a2a30" fill="none" />
                 <XAxis
                   dataKey="name"
-                  stroke="#666"
-                  tick={{ fill: '#666' }}
+                  stroke="#7c7c86"
+                  tick={{ fill: '#a1a1aa', fontSize: 12 }}
                 />
                 <YAxis
-                  stroke="#666"
-                  tick={{ fill: '#666' }}
+                  stroke="#7c7c86"
+                  tick={{ fill: '#a1a1aa', fontSize: 12 }}
                   tickFormatter={(value) => `${value.toLocaleString()} ${CURRENCY_SYMBOLS[primaryCurrency]}`}
                 />
                 <Tooltip
                   cursor={{ fill: 'transparent' }}
                   contentStyle={{
-                    backgroundColor: "#050505",
-                    border: "1px solid #333",
-                    borderRadius: "8px",
-                    color: "#fff",
+                    backgroundColor: "#18181c",
+                    border: "1px solid #34343b",
+                    borderRadius: "10px",
+                    color: "#f4f4f5",
                   }}
                   labelStyle={{ color: "#fbbf24" }}
-                  itemStyle={{ color: "#f97316" }}
+                  itemStyle={{ color: "#f59e0b" }}
                   formatter={(value) => {
                     if (typeof value === 'number') {
                       return [
@@ -163,38 +163,39 @@ export function IncomeChart({ projects }: IncomeChartProps) {
                   }}
                 />
                 <Legend 
-                  wrapperStyle={{ color: "#fff" }}
+                  wrapperStyle={{ color: "#b4b4bd", fontSize: "12px" }}
                 />
                 <Bar
                   dataKey="income"
                   name={`Income (${CURRENCY_SYMBOLS[primaryCurrency]})`}
-                  fill="#f97316"
+                  fill="#f59e0b"
+                  maxBarSize={72}
                   radius={[8, 8, 0, 0]}
                 />
               </BarChart>
             ) : (
               <LineChart data={groupedData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#333" fill="none" />
+                <CartesianGrid strokeDasharray="3 3" stroke="#2a2a30" fill="none" />
                 <XAxis
                   dataKey="name"
-                  stroke="#666"
-                  tick={{ fill: '#666' }}
+                  stroke="#7c7c86"
+                  tick={{ fill: '#a1a1aa', fontSize: 12 }}
                 />
                 <YAxis
-                  stroke="#666"
-                  tick={{ fill: '#666' }}
+                  stroke="#7c7c86"
+                  tick={{ fill: '#a1a1aa', fontSize: 12 }}
                   tickFormatter={(value) => `${value.toLocaleString()} ${CURRENCY_SYMBOLS[primaryCurrency]}`}
                 />
                 <Tooltip
                   cursor={{ fill: 'transparent' }}
                   contentStyle={{
-                    backgroundColor: "#050505",
-                    border: "1px solid #333",
-                    borderRadius: "8px",
-                    color: "#fff",
+                    backgroundColor: "#18181c",
+                    border: "1px solid #34343b",
+                    borderRadius: "10px",
+                    color: "#f4f4f5",
                   }}
                   labelStyle={{ color: "#fbbf24" }}
-                  itemStyle={{ color: "#f97316" }}
+                  itemStyle={{ color: "#f59e0b" }}
                   formatter={(value) => {
                     if (typeof value === 'number') {
                       return [
@@ -206,15 +207,15 @@ export function IncomeChart({ projects }: IncomeChartProps) {
                   }}
                 />
                 <Legend 
-                  wrapperStyle={{ color: "#fff" }}
+                  wrapperStyle={{ color: "#b4b4bd", fontSize: "12px" }}
                 />
                 <Line
                   type="monotone"
                   dataKey="income"
                   name={`Income (${CURRENCY_SYMBOLS[primaryCurrency]})`}
-                  stroke="#f97316"
+                  stroke="#f59e0b"
                   strokeWidth={2}
-                  dot={{ fill: "#f97316", strokeWidth: 2 }}
+                  dot={{ fill: "#f59e0b", strokeWidth: 2 }}
                 />
               </LineChart>
             )}

@@ -40,38 +40,36 @@ export default function SignUpPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[#050505] p-4">
-      <Card className="w-full max-w-md bg-[#0a0a0a] border-zinc-800">
+    <div className="flex min-h-screen items-center justify-center bg-page p-4 sm:p-6">
+      <Card className="w-full max-w-md">
         <CardHeader>
-          <CardTitle className="text-2xl font-bold text-center text-transparent bg-clip-text bg-linear-60 from-yellow-500 to-orange-600">
+          <CardTitle className="text-center text-xl font-semibold tracking-tight text-text-primary">
             Sign Up for Freelance CRM
           </CardTitle>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
-              <Label className="text-transparent bg-clip-text bg-linear-60 from-yellow-500 to-orange-600" htmlFor="name">Name (optional)</Label>
+              <Label htmlFor="name">Name (optional)</Label>
               <Input
                 id="name"
                 name="name"
                 type="text"
                 placeholder="John Doe"
-                className="bg-zinc-900 border-zinc-800 text-white"
               />
             </div>
             <div className="space-y-2">
-              <Label className="text-transparent bg-clip-text bg-linear-60 from-yellow-500 to-orange-600" htmlFor="Email">Email</Label>
+              <Label htmlFor="email">Email</Label>
               <Input
                 id="email"
                 name="email"
                 type="email"
                 placeholder="you@example.com"
                 required
-                className="bg-zinc-900 border-zinc-800 text-white"
               />
             </div>
             <div className="space-y-2">
-              <Label className="text-transparent bg-clip-text bg-linear-60 from-yellow-500 to-orange-600" htmlFor="password">Password</Label>
+              <Label htmlFor="password">Password</Label>
               <Input
                 id="password"
                 name="password"
@@ -79,23 +77,22 @@ export default function SignUpPage() {
                 required
                 minLength={8}
                 maxLength={128}
-                className="bg-zinc-900 border-zinc-800 text-white"
               />
             </div>
             {error && (
-              <p className="text-red-500 text-sm text-center">{error}</p>
+              <p className="text-center text-sm text-destructive" role="alert">{error}</p>
             )}
             <Button
               type="submit"
               disabled={loading}
-              className="w-full text-lg text-black font-bold font-mono bg-linear-90 from-yellow-500 to-orange-600 hover:scale-95 cursor-pointer"
+              className="w-full"
             >
               {loading ? "Signing up..." : "Sign Up"}
             </Button>
           </form>
-          <p className="mt-4 text-center text-zinc-400 text-sm">
+          <p className="mt-4 text-center text-sm text-text-secondary">
             Already have an account?{" "}
-            <Link href="/auth/signin" className="text-orange-500 hover:underline">
+            <Link href="/auth/signin" className="font-medium text-accent hover:text-warning hover:underline">
               Sign In
             </Link>
           </p>

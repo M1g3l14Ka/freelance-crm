@@ -24,8 +24,8 @@ export default async function ProjectsPage({ searchParams }: { searchParams: Pro
     <>
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold">Projects</h1>
-          <p className="mt-1 text-sm text-zinc-500">Create projects, track status, and review after-tax income.</p>
+          <h1 className="app-page-title">Projects</h1>
+          <p className="app-page-description">Create projects, track status, and review after-tax income.</p>
         </div>
         <div className="flex items-center gap-2">
           <CurrencySelector currentCurrency={baseCurrency} />
@@ -33,10 +33,10 @@ export default async function ProjectsPage({ searchParams }: { searchParams: Pro
         </div>
       </div>
 
-      <div className="overflow-x-auto rounded-lg border border-zinc-800 bg-zinc-950">
-        <Table>
+      <div className="app-surface overflow-hidden">
+        <Table className="min-w-[920px]">
           <TableHeader>
-            <TableRow className="border-zinc-800 hover:bg-zinc-900">
+            <TableRow className="bg-surface-elevated/50 hover:bg-surface-elevated/50">
               <TableHead>Project name</TableHead><TableHead>Status</TableHead><TableHead>Date added</TableHead>
               <TableHead className="text-right">Amount after tax</TableHead><TableHead className="text-right">Converted</TableHead><TableHead />
             </TableRow>
@@ -44,29 +44,29 @@ export default async function ProjectsPage({ searchParams }: { searchParams: Pro
           <TableBody>
             {projectsWithConversion.map((project, index) => (
               <AnimatedTableRow key={project.id} index={index}>
-                <TableCell className="font-medium">{project.title}</TableCell>
+                <TableCell className="font-medium text-text-primary">{project.title}</TableCell>
                 <TableCell>
                   <div className="flex items-center gap-2">
-                    <span className={`rounded-full px-2 py-1 text-xs font-bold ${project.status === "ACTIVE" ? "bg-orange-950/30 text-orange-500" : "bg-green-950/30 text-green-500"}`}>
+                    <span className={`rounded-full border px-2.5 py-1 text-xs font-medium ${project.status === "ACTIVE" ? "border-warning/20 bg-warning/10 text-warning" : "border-success/20 bg-success/10 text-success"}`}>
                       {project.status === "ACTIVE" ? "Active" : "Completed"}
                     </span>
                     {!isDemo && <ProjectStatusToggle id={project.id} currentStatus={project.status} />}
                   </div>
                 </TableCell>
-                <TableCell className="text-zinc-400">{new Date(project.createdAt).toLocaleDateString("ru-RU")}</TableCell>
-                <TableCell className="text-right font-bold text-orange-500">
+                <TableCell className="text-text-secondary">{new Date(project.createdAt).toLocaleDateString("ru-RU")}</TableCell>
+                <TableCell className="text-right font-semibold tabular-nums text-text-primary">
                   {project.netIncome?.toLocaleString("ru-RU")} {isCurrency(project.currency) ? CURRENCY_SYMBOLS[project.currency] : project.currency}
-                  <div className="text-xs font-normal text-zinc-500">
+                  <div className="mt-1 text-xs font-normal text-text-muted">
                     Tax {project.taxRate}% ({project.grossIncome.toLocaleString("ru-RU")} {isCurrency(project.currency) ? CURRENCY_SYMBOLS[project.currency] : project.currency})
                   </div>
                 </TableCell>
-                <TableCell className="text-right text-zinc-400">
+                <TableCell className="text-right tabular-nums text-text-secondary">
                   {baseCurrency !== project.currency && <>≈ {project.convertedAmount.toLocaleString("ru-RU", { maximumFractionDigits: 2 })} {CURRENCY_SYMBOLS[baseCurrency]}</>}
                 </TableCell>
                 <TableCell>{!isDemo && <DeleteProjectButton id={project.id} />}</TableCell>
               </AnimatedTableRow>
             ))}
-            {projects.length === 0 && <TableRow><TableCell colSpan={6} className="py-8 text-center text-zinc-500">No projects yet.</TableCell></TableRow>}
+            {projects.length === 0 && <TableRow><TableCell colSpan={6} className="py-12 text-center text-text-muted">No projects yet.</TableCell></TableRow>}
           </TableBody>
         </Table>
       </div>

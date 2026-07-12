@@ -49,21 +49,21 @@ export function ComparisonChart({ projects }: ComparisonChartProps) {
   }, [projects, compareType, primaryCurrency])
 
   return (
-    <Card className="bg-[#050505] border-zinc-800">
+    <Card>
       <CardHeader>
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-          <CardTitle className="text-2xl font-bold text-transparent bg-clip-text bg-linear-60 from-yellow-500 to-orange-600">
+          <CardTitle>
             Income Comparison
           </CardTitle>
-          <div className="flex gap-1 bg-zinc-900 rounded-lg p-1">
+          <div className="app-segment">
             <Button
               size="sm"
               onClick={() => setCompareType("month")}
               variant={compareType === "month" ? "default" : "ghost"}
               className={
                 compareType === "month"
-                  ? "bg-orange-500 hover:bg-orange-600 text-black font-bold"
-                  : "text-zinc-400 hover:text-white"
+                  ? "bg-accent text-accent-foreground hover:bg-accent-hover"
+                  : ""
               }
             >
               By Month
@@ -74,8 +74,8 @@ export function ComparisonChart({ projects }: ComparisonChartProps) {
               variant={compareType === "day" ? "default" : "ghost"}
               className={
                 compareType === "day"
-                  ? "bg-orange-500 hover:bg-orange-600 text-black font-bold"
-                  : "text-zinc-400 hover:text-white"
+                  ? "bg-accent text-accent-foreground hover:bg-accent-hover"
+                  : ""
               }
             >
               By Day
@@ -87,13 +87,13 @@ export function ComparisonChart({ projects }: ComparisonChartProps) {
         {comparisonData.length > 1 ? (
           <>
             <div className="mb-4 flex items-center gap-4">
-              <div className="text-sm text-zinc-400">
+              <div className="text-sm text-text-secondary">
                 Change:{" "}
                 <span
                   className={`font-bold ${
                     percentageChange >= 0
-                      ? "text-green-500"
-                      : "text-red-500"
+                      ? "text-success"
+                      : "text-destructive"
                   }`}
                 >
                   {percentageChange >= 0 ? "+" : ""}
@@ -101,28 +101,28 @@ export function ComparisonChart({ projects }: ComparisonChartProps) {
                 </span>
               </div>
               {percentageChange >= 0 ? (
-                <span className="text-green-500 text-lg">📈</span>
+                <span className="text-success text-lg">📈</span>
               ) : (
-                <span className="text-red-500 text-lg">📉</span>
+                <span className="text-destructive text-lg">📉</span>
               )}
             </div>
-            <div className="h-75">
+            <div className="h-80 min-w-0 sm:h-96">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={comparisonData}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#333" fill="none" />
-                  <XAxis dataKey="name" stroke="#666" tick={{ fill: '#666' }} />
+                  <CartesianGrid strokeDasharray="3 3" stroke="#2a2a30" fill="none" />
+                  <XAxis dataKey="name" stroke="#7c7c86" tick={{ fill: '#a1a1aa', fontSize: 12 }} />
                   <YAxis 
-                    stroke="#666" 
-                    tick={{ fill: '#666' }} 
+                    stroke="#7c7c86"
+                    tick={{ fill: '#a1a1aa', fontSize: 12 }}
                     tickFormatter={(value) => `${(value / 1000000).toFixed(1)}M ${CURRENCY_SYMBOLS[primaryCurrency]}`}
                   />
                   <Tooltip
                     cursor={{ fill: 'transparent' }}
                     contentStyle={{
-                      backgroundColor: "#050505",
-                      border: "1px solid #333",
-                      borderRadius: "8px",
-                      color: "#fff",
+                      backgroundColor: "#18181c",
+                      border: "1px solid #34343b",
+                      borderRadius: "10px",
+                      color: "#f4f4f5",
                     }}
                     labelStyle={{ color: "#fbbf24" }}
                     formatter={(value) => {
@@ -135,7 +135,7 @@ export function ComparisonChart({ projects }: ComparisonChartProps) {
                   />
                   <Legend 
                     wrapperStyle={{ 
-                      color: "#fff",
+                      color: "#b4b4bd",
                       paddingTop: "10px"
                     }}
                   />
@@ -143,18 +143,19 @@ export function ComparisonChart({ projects }: ComparisonChartProps) {
                     dataKey="income" 
                     name={`Income (${CURRENCY_SYMBOLS[primaryCurrency]})`} 
                     radius={[8, 8, 0, 0]}
-                    fill="#f97316"
+                    fill="#f59e0b"
+                    maxBarSize={72}
                   />
                 </BarChart>
               </ResponsiveContainer>
             </div>
           </>
         ) : (
-          <div className="h-75 flex flex-col items-center justify-center text-zinc-500">
+          <div className="flex h-80 flex-col items-center justify-center text-text-muted sm:h-96">
             <TrendingUp className="w-12 h-12 mb-4 opacity-20" />
             <div className="text-center">
               <div className="font-bold mb-2">Not enough data</div>
-              <div className="text-sm text-zinc-600">
+              <div className="text-sm text-text-muted">
                 {projects.length === 0 
                   ? "Add your first project to see comparison"
                   : "Projects need to be from different months to compare"}

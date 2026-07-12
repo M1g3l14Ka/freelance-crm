@@ -32,8 +32,8 @@ export function ProjectStatusToggle({ id, currentStatus }: ProjectStatusTogglePr
       disabled={isLoading}
       className={`
         ${isCompleted 
-          ? "text-green-500 hover:text-green-400 hover:bg-green-950" 
-          : "text-orange-500 hover:text-orange-400 hover:bg-orange-950"
+          ? "text-success hover:bg-success/10 hover:text-success"
+          : "text-warning hover:bg-warning/10 hover:text-warning"
         }
       `}
       title={isCompleted ? "COMPLETED" : "ACTIVE"}
