@@ -46,7 +46,7 @@ export async function createBudgetLimit(formData: FormData) {
       create: data,
     })
 
-    revalidatePath("/")
+    revalidatePath("/dashboard", "layout")
     return { success: true }
   } catch (err) {
     return actionFailure("Create budget limit", err)
@@ -61,7 +61,7 @@ export async function updateBudgetSpent(id: string, spentAmount: number) {
       where: { id, userId: user.id },
       data: { spentAmount },
     })
-    revalidatePath("/")
+    revalidatePath("/dashboard", "layout")
     return { success: true }
   } catch (err) {
     return actionFailure("Update budget spent", err)
@@ -75,7 +75,7 @@ export async function deleteBudgetLimit(id: string) {
     await prisma.budgetLimit.delete({
       where: { id, userId: user.id },
     })
-    revalidatePath("/")
+    revalidatePath("/dashboard", "layout")
     return { success: true }
   } catch (err) {
     return actionFailure("Delete budget limit", err)
@@ -117,7 +117,7 @@ export async function addExpense(formData: FormData) {
     }
 
     await prisma.expense.create({ data })
-    revalidatePath("/")
+    revalidatePath("/dashboard", "layout")
     return { success: true }
   } catch (err) {
     return actionFailure("Add expense", err)
@@ -131,7 +131,7 @@ export async function deleteExpense(id: string) {
     await prisma.expense.delete({
       where: { id, userId: user.id },
     })
-    revalidatePath("/")
+    revalidatePath("/dashboard", "layout")
     return { success: true }
   } catch (err) {
     return actionFailure("Delete expense", err)

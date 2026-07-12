@@ -32,7 +32,7 @@ export async function createProject(formData: FormData) {
       }
     })
 
-    revalidatePath("/")
+    revalidatePath("/dashboard", "layout")
     return { success: true }
   } catch (err) {
     return actionFailure("Create project", err)
@@ -46,7 +46,7 @@ export async function deleteProject(id: string) {
     await prisma.project.delete({
       where: { id, userId: user.id },
     })
-    revalidatePath("/")
+    revalidatePath("/dashboard", "layout")
     return { success: true }
   } catch (err) {
     return actionFailure("Delete project", err)
@@ -61,7 +61,7 @@ export async function updateProjectStatus(id: string, status: string) {
       where: { id, userId: user.id },
       data: { status },
     })
-    revalidatePath("/")
+    revalidatePath("/dashboard", "layout")
     return { success: true }
   } catch (err) {
     return actionFailure("Update project status", err)

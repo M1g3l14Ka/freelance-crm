@@ -30,7 +30,7 @@ export async function createSubscription(formData: FormData) {
       },
     })
 
-    revalidatePath("/")
+    revalidatePath("/dashboard", "layout")
     return { success: true }
   } catch (err) {
     return actionFailure("Create subscription", err)
@@ -44,7 +44,7 @@ export async function deleteSubscription(id: string) {
     await prisma.subscription.delete({
       where: { id, userId: user.id },
     })
-    revalidatePath("/")
+    revalidatePath("/dashboard", "layout")
     return { success: true }
   } catch (err) {
     return actionFailure("Delete subscription", err)
@@ -91,7 +91,7 @@ export async function updateSubscriptionDates() {
       }
     }
 
-    revalidatePath("/")
+    revalidatePath("/dashboard", "layout")
     return { success: true }
   } catch (err) {
     return actionFailure("Update subscription dates", err)
