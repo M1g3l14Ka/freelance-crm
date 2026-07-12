@@ -2,6 +2,7 @@ import NextAuth from "next-auth"
 import Credentials from "next-auth/providers/credentials"
 import { prisma } from "@/lib/prisma"
 import bcrypt from "bcryptjs"
+import { getDemoUserId, isDemoUserId } from "@/lib/demo"
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
   providers: [
@@ -48,6 +49,28 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         }
       },
     }),
+    Credentials({
+      id: "demo",
+      name: "Demo workspace",
+      credentials: {},
+      async authorize() {
+        const demoUserId = getDemoUserId()
+        if (!demoUserId) return null
+
+        const user = await prisma.user.findUnique({
+          where: { id: demoUserId },
+        })
+
+        if (!user) return null
+
+        return {
+          id: user.id,
+          email: user.email,
+          name: user.name,
+          image: user.image,
+        }
+      },
+    }),
   ],
   session: {
     strategy: "jwt",
@@ -59,12 +82,14 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     async jwt({ token, user }) {
       if (user) {
         token.id = user.id
+        token.isDemo = isDemoUserId(user.id)
       }
       return token
     },
     async session({ session, token }) {
       if (session.user) {
         session.user.id = token.id as string
+        session.user.isDemo = token.isDemo === true
       }
       return session
     },
