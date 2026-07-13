@@ -136,6 +136,14 @@ The seed is idempotent and never runs during install, build, or application star
 
 ---
 
+## AI conversation limits
+
+Authenticated non-demo users can keep persistent assistant conversations. Each successful request stores the user and assistant messages together only after Gemini responds successfully. Gemini requests are aborted after approximately 25 seconds.
+
+The assistant allows up to 5 attempts per user in a rolling minute and up to 50 successfully stored user messages per UTC day. The daily limit is derived from persisted owned messages. The short burst limiter is intentionally in memory because production currently runs one PM2 process: it resets whenever that process restarts and is not suitable for multi-instance deployment. Replace it with a shared limiter before adding more application instances.
+
+---
+
 ## SQLite backups on a VPS
 
 This workflow applies only when `DATABASE_URL` in the project's existing `.env` is a local `file:` SQLite URL. It uses SQLite's online backup API, so it is safe to run while the application is using the database. Backups default to `/root/crm-backups`; set `CRM_BACKUP_DIR` to an absolute directory to use another location.
