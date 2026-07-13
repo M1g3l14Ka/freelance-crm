@@ -1,8 +1,8 @@
 import NextAuth from "next-auth"
 import Credentials from "next-auth/providers/credentials"
 import { prisma } from "@/lib/prisma"
-import bcrypt from "bcryptjs"
 import { getDemoUserId, isDemoUserId } from "@/lib/demo"
+import { normalizeEmail, verifyPassword } from "@/lib/credentials"
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
   providers: [
@@ -14,7 +14,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       },
       async authorize(credentials) {
         const email = typeof credentials?.email === "string"
-          ? credentials.email.trim().toLowerCase()
+          ? normalizeEmail(credentials.email)
           : ""
         const password = typeof credentials?.password === "string"
           ? credentials.password
@@ -32,7 +32,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           throw new Error("Invalid email or password")
         }
 
-        const isMatch = await bcrypt.compare(
+        const isMatch = await verifyPassword(
           password,
           user.password
         )

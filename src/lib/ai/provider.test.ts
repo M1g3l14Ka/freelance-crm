@@ -6,6 +6,7 @@ vi.mock("server-only", () => ({}))
 import { generateAssistantReply } from "@/lib/ai/provider"
 
 const originalApiKey = process.env.GEMINI_API_KEY
+const originalModel = process.env.GEMINI_MODEL
 const testApiKey = "test-api-key-that-must-stay-private"
 const fetchMock = vi.fn<typeof fetch>()
 
@@ -29,9 +30,18 @@ function successfulResponse(text = "Assistant answer") {
   return providerResponse([{ content: { parts: [{ text }] } }])
 }
 
+function transientResponse(status: number) {
+  return new Response(null, { status })
+}
+
+async function advanceRetryDelay(delayMs: number) {
+  await vi.advanceTimersByTimeAsync(delayMs)
+}
+
 describe("Gemini provider", () => {
   beforeEach(() => {
     process.env.GEMINI_API_KEY = testApiKey
+    delete process.env.GEMINI_MODEL
     fetchMock.mockReset()
     vi.stubGlobal("fetch", fetchMock)
     vi.spyOn(console, "error").mockImplementation(() => undefined)
@@ -45,6 +55,11 @@ describe("Gemini provider", () => {
       delete process.env.GEMINI_API_KEY
     } else {
       process.env.GEMINI_API_KEY = originalApiKey
+    }
+    if (originalModel === undefined) {
+      delete process.env.GEMINI_MODEL
+    } else {
+      process.env.GEMINI_MODEL = originalModel
     }
   })
 
@@ -73,6 +88,27 @@ describe("Gemini provider", () => {
     expect(String(requestUrl)).not.toContain("?key=")
     expect(headers.get("x-goog-api-key")).toBe(testApiKey)
     expect(headers.get("Content-Type")).toBe("application/json")
+  })
+
+  it("uses gemini-3-flash-preview when GEMINI_MODEL is not configured", async () => {
+    fetchMock.mockResolvedValue(successfulResponse())
+
+    await generateAssistantReply(requestInput)
+
+    expect(String(fetchMock.mock.calls[0]?.[0])).toBe(
+      "https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent"
+    )
+  })
+
+  it("uses the server-side GEMINI_MODEL configuration", async () => {
+    process.env.GEMINI_MODEL = "gemini-custom-preview"
+    fetchMock.mockResolvedValue(successfulResponse())
+
+    await generateAssistantReply(requestInput)
+
+    expect(String(fetchMock.mock.calls[0]?.[0])).toBe(
+      "https://generativelanguage.googleapis.com/v1beta/models/gemini-custom-preview:generateContent"
+    )
   })
 
   it("serializes conversation history, the current message, and the output bound", async () => {
@@ -148,11 +184,96 @@ describe("Gemini provider", () => {
   })
 
   it("returns a provider error for a non-success HTTP response", async () => {
-    fetchMock.mockResolvedValue(new Response("provider details", { status: 503 }))
+    fetchMock.mockResolvedValue(new Response("provider details", { status: 400 }))
 
     await expect(generateAssistantReply(requestInput)).rejects.toBeInstanceOf(
       AiProviderError
     )
+    expect(fetchMock).toHaveBeenCalledOnce()
+  })
+
+  it.each([503, 429])("retries HTTP %i once and returns the successful response", async (status) => {
+    vi.useFakeTimers()
+    vi.spyOn(Math, "random").mockReturnValue(0)
+    fetchMock
+      .mockResolvedValueOnce(transientResponse(status))
+      .mockResolvedValueOnce(successfulResponse("Recovered response"))
+
+    const providerRequest = generateAssistantReply(requestInput)
+    const result = expect(providerRequest).resolves.toBe("Recovered response")
+
+    await advanceRetryDelay(750)
+    await result
+    expect(fetchMock).toHaveBeenCalledTimes(2)
+  })
+
+  it("stops repeated 503 responses after three total attempts", async () => {
+    vi.useFakeTimers()
+    vi.spyOn(Math, "random").mockReturnValue(0)
+    fetchMock.mockResolvedValue(transientResponse(503))
+
+    const providerRequest = generateAssistantReply(requestInput)
+    const rejection = expect(providerRequest).rejects.toBeInstanceOf(AiProviderError)
+
+    await advanceRetryDelay(750)
+    await advanceRetryDelay(1_500)
+    await rejection
+    expect(fetchMock).toHaveBeenCalledTimes(3)
+  })
+
+  it("does not retry a 403 response", async () => {
+    fetchMock.mockResolvedValue(transientResponse(403))
+
+    await expect(generateAssistantReply(requestInput)).rejects.toBeInstanceOf(
+      AiProviderError
+    )
+    expect(fetchMock).toHaveBeenCalledOnce()
+  })
+
+  it("does not retry invalid response content", async () => {
+    fetchMock.mockResolvedValue(
+      providerResponse([{ content: { parts: [{ inlineData: {} }] } }])
+    )
+
+    await expect(generateAssistantReply(requestInput)).rejects.toBeInstanceOf(
+      AiProviderError
+    )
+    expect(fetchMock).toHaveBeenCalledOnce()
+  })
+
+  it("retries a temporary network failure and returns the successful response", async () => {
+    vi.useFakeTimers()
+    vi.spyOn(Math, "random").mockReturnValue(0)
+    fetchMock
+      .mockRejectedValueOnce(new TypeError("temporary network failure"))
+      .mockResolvedValueOnce(successfulResponse("Network recovered"))
+
+    const providerRequest = generateAssistantReply(requestInput)
+    const result = expect(providerRequest).resolves.toBe("Network recovered")
+
+    await advanceRetryDelay(750)
+    await result
+    expect(fetchMock).toHaveBeenCalledTimes(2)
+  })
+
+  it("uses one overall 25-second deadline across attempts and retry delays", async () => {
+    vi.useFakeTimers()
+    vi.spyOn(Math, "random").mockReturnValue(0)
+    fetchMock.mockImplementationOnce(
+      () =>
+        new Promise<Response>((resolve) => {
+          setTimeout(() => resolve(transientResponse(503)), 24_500)
+        })
+    )
+
+    const providerRequest = generateAssistantReply(requestInput)
+    const rejection = expect(providerRequest).rejects.toBeInstanceOf(
+      AiProviderTimeoutError
+    )
+
+    await vi.advanceTimersByTimeAsync(25_000)
+    await rejection
+    expect(fetchMock).toHaveBeenCalledOnce()
   })
 
   it("aborts a request after 25 seconds and returns a timeout error", async () => {
@@ -178,12 +299,18 @@ describe("Gemini provider", () => {
   })
 
   it("does not expose raw provider errors", async () => {
+    vi.useFakeTimers()
+    vi.spyOn(Math, "random").mockReturnValue(0)
     const rawProviderMessage = "raw provider internals and secret details"
     fetchMock.mockRejectedValue(new Error(rawProviderMessage))
 
-    const error = await generateAssistantReply(requestInput).catch(
+    const providerRequest = generateAssistantReply(requestInput)
+    const capturedError = providerRequest.catch(
       (providerError: unknown) => providerError
     )
+    await advanceRetryDelay(750)
+    await advanceRetryDelay(1_500)
+    const error = await capturedError
 
     expect(error).toBeInstanceOf(AiProviderError)
     expect(error).toMatchObject({

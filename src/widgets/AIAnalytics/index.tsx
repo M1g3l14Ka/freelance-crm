@@ -28,6 +28,7 @@ import {
   DialogTitle,
 } from "@/shared/ui/dialog"
 import { cn } from "@/lib/utils"
+import { formatUtcDate } from "@/lib/date-format"
 
 const MAX_MESSAGE_LENGTH = 2_000
 const SUGGESTED_QUESTIONS = [
@@ -253,7 +254,7 @@ export function AIAnalytics({
                         {conversation.title}
                       </span>
                       <span className="mt-0.5 block text-xs text-text-muted">
-                        {new Date(conversation.updatedAt).toLocaleDateString()}
+                        {formatUtcDate(conversation.updatedAt)}
                       </span>
                     </button>
                     <Button
