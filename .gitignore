@@ -40,6 +40,13 @@ yarn-error.log*
 *.sqlite
 *.sqlite3
 
+# Local database backup directories and files
+/backups/
+/crm-backups/
+*.db.backup
+*.sqlite.backup
+*.sqlite3.backup
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts

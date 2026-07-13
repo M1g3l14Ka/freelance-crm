@@ -28,7 +28,7 @@ This is my personal CRM system designed to help freelancers manage their finance
 
 **Core:** Next.js 16, TypeScript
 
-**Database:** Prisma ORM, SQLite (local) + Turso/libSQL (production)
+**Database:** Prisma ORM + SQLite (local and production)
 
 **Authentication:** NextAuth.js v5
 
@@ -62,13 +62,13 @@ This is my personal CRM system designed to help freelancers manage their finance
 Building this project helped me:
 
 - **Deepened my knowledge of Next.js 16** - App Router, Server Components, Server Actions, Middleware
-- **Mastered Prisma ORM** - Complex schemas, migrations, multi-database support (SQLite for local, Turso for production)
+- **Mastered Prisma ORM** - Complex schemas, committed migrations, and SQLite operations
 - **Successfully integrated AI** - Google Gemini API for real-time financial analysis with custom prompts
 - **Leveled up my state management** - Handling multi-currency conversions with proper caching and exchange rate API
 - **Improved authentication flows** - NextAuth.js with custom credentials provider and JWT sessions
 - **Built responsive charts** - Recharts with custom theming, tooltips, and dark mode styling
-- **Production deployment** - Configured Turso/libSQL for serverless database hosting on Vercel
-- **Domain configuration** - Set up custom domain with HTTPS on Vercel
+- **Production deployment** - Operated the application on a Linux VPS with PM2 and a local SQLite database
+- **Domain configuration** - Set up the custom domain behind Nginx and HTTPS
 - **Database management** - Manual SQL migrations, troubleshooting production database issues
 
 ---
@@ -136,34 +136,118 @@ The seed is idempotent and never runs during install, build, or application star
 
 ---
 
-## Production Deployment (Vercel + Turso)
+## SQLite backups on a VPS
 
-### 1. Create Turso Database
-1. Sign up at https://turso.tech
-2. Create a new database
-3. Get your database URL and auth token
+This workflow applies only when `DATABASE_URL` in the project's existing `.env` is a local `file:` SQLite URL. It uses SQLite's online backup API, so it is safe to run while the application is using the database. Backups default to `/root/crm-backups`; set `CRM_BACKUP_DIR` to an absolute directory to use another location.
 
-### 2. Configure Vercel
-In Vercel Dashboard → Settings → Environment Variables:
-```
-DATABASE_URL=libsql://your-db.your-org.turso.io
-TURSO_AUTH_TOKEN=your-turso-token
-AUTH_SECRET=your-secret-key
-GEMINI_API_KEY=your-gemini-key
-```
+### Run a backup manually
 
-### 3. Create Database Tables
-In Turso Dashboard → SQL Console → Run All:
-```sql
--- Copy SQL schema from prisma/schema.prisma
-```
+From the production project root:
 
-### 4. Deploy
 ```bash
-git push
+cd /root/crm
+npm run db:backup
 ```
 
-Vercel will automatically build and deploy!
+The command creates a timestamped backup, runs `PRAGMA integrity_check` against it, prints the backup path and integrity result, and exits with an error if verification does not return `ok`. The latest 14 matching backups are retained; older ones are deleted after a successful verified backup.
+
+### Schedule a daily backup
+
+Edit root's crontab with `sudo crontab -e` and add this entry:
+
+```cron
+0 3 * * * cd /root/crm && /usr/bin/npm run db:backup >> /var/log/freelance-crm-backup.log 2>&1
+```
+
+### Test a restore safely
+
+Never overwrite or open the live production database for a restore test. Copy a selected backup into a separate test file, then verify only that copy with Python 3's standard-library `sqlite3` module:
+
+```bash
+cp /root/crm-backups/freelance-crm-YYYYMMDDTHHMMSSffffffZ.sqlite3 /tmp/freelance-crm-restore-test.sqlite3
+python3 - <<'PY'
+import sqlite3
+from pathlib import Path
+
+test_database = Path("/tmp/freelance-crm-restore-test.sqlite3")
+with sqlite3.connect(f"{test_database.as_uri()}?mode=ro", uri=True) as connection:
+    results = connection.execute("PRAGMA integrity_check").fetchall()
+
+integrity = "; ".join(str(row[0]) for row in results)
+print(f"Integrity check: {integrity}")
+if results != [("ok",)]:
+    raise SystemExit(1)
+PY
+```
+
+This verification requires no additional Python packages. If the restored data needs application-level testing afterward, use only a disposable test process configured for the separate `/tmp` file and a non-production port.
+
+### Download an off-server copy
+
+From your local computer, replace the host and backup filename as needed:
+
+```bash
+scp root@your-vps.example.com:/root/crm-backups/freelance-crm-YYYYMMDDTHHMMSSffffffZ.sqlite3 ./
+```
+
+Backups stored only on the same VPS are not sufficient: a disk failure, accidental deletion, server compromise, or provider loss can destroy both the live database and its local backups. Regularly copy verified backups to a separately secured system or object-storage account and test restoration from that off-server copy.
+
+---
+
+## Production Deployment (Linux VPS)
+
+The active production environment is the Linux VPS checkout at `/root/crm`. It runs the `crm` PM2 process with a local SQLite database and is exposed through Nginx as the reverse proxy. Deployments come from `origin/main`.
+
+Run the following sequence on the VPS:
+
+1. Create and verify a database backup before changing the checkout:
+
+   ```bash
+   cd /root/crm
+   npm run db:backup
+   ```
+
+2. Fetch the remote and fast-forward the deployment checkout to `origin/main`:
+
+   ```bash
+   git fetch origin
+   git merge --ff-only origin/main
+   ```
+
+3. Install the exact locked dependencies, including the development tools required by verification:
+
+   ```bash
+   npm ci --include=dev
+   ```
+
+4. If the deployment includes new committed migrations under `prisma/migrations`, apply them before restarting the application:
+
+   ```bash
+   npm run db:migrate:deploy
+   ```
+
+   Do not use `prisma db push` in production. If there are no new committed migrations, skip this step.
+
+5. Run the complete quality gate:
+
+   ```bash
+   npm run verify
+   ```
+
+6. Restart the existing PM2 process and confirm it is online:
+
+   ```bash
+   pm2 restart crm
+   pm2 status crm
+   ```
+
+7. Perform an external health check through Nginx:
+
+   ```bash
+   curl --fail --silent --show-error https://crm.mkfox.tech/ > /dev/null && echo "Health check passed"
+   ```
+
+Vercel and Turso/libSQL are alternative hosting options supported by parts of the codebase, but they are not the active production environment and are not part of this deployment procedure.
 
 ---
 
