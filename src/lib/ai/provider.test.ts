@@ -6,6 +6,7 @@ vi.mock("server-only", () => ({}))
 import { generateAssistantReply } from "@/lib/ai/provider"
 
 const originalApiKey = process.env.GEMINI_API_KEY
+const originalModel = process.env.GEMINI_MODEL
 const testApiKey = "test-api-key-that-must-stay-private"
 const fetchMock = vi.fn<typeof fetch>()
 
@@ -40,6 +41,7 @@ async function advanceRetryDelay(delayMs: number) {
 describe("Gemini provider", () => {
   beforeEach(() => {
     process.env.GEMINI_API_KEY = testApiKey
+    delete process.env.GEMINI_MODEL
     fetchMock.mockReset()
     vi.stubGlobal("fetch", fetchMock)
     vi.spyOn(console, "error").mockImplementation(() => undefined)
@@ -53,6 +55,11 @@ describe("Gemini provider", () => {
       delete process.env.GEMINI_API_KEY
     } else {
       process.env.GEMINI_API_KEY = originalApiKey
+    }
+    if (originalModel === undefined) {
+      delete process.env.GEMINI_MODEL
+    } else {
+      process.env.GEMINI_MODEL = originalModel
     }
   })
 
@@ -81,6 +88,27 @@ describe("Gemini provider", () => {
     expect(String(requestUrl)).not.toContain("?key=")
     expect(headers.get("x-goog-api-key")).toBe(testApiKey)
     expect(headers.get("Content-Type")).toBe("application/json")
+  })
+
+  it("uses gemini-3-flash-preview when GEMINI_MODEL is not configured", async () => {
+    fetchMock.mockResolvedValue(successfulResponse())
+
+    await generateAssistantReply(requestInput)
+
+    expect(String(fetchMock.mock.calls[0]?.[0])).toBe(
+      "https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent"
+    )
+  })
+
+  it("uses the server-side GEMINI_MODEL configuration", async () => {
+    process.env.GEMINI_MODEL = "gemini-custom-preview"
+    fetchMock.mockResolvedValue(successfulResponse())
+
+    await generateAssistantReply(requestInput)
+
+    expect(String(fetchMock.mock.calls[0]?.[0])).toBe(
+      "https://generativelanguage.googleapis.com/v1beta/models/gemini-custom-preview:generateContent"
+    )
   })
 
   it("serializes conversation history, the current message, and the output bound", async () => {

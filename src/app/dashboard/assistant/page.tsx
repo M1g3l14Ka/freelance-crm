@@ -11,6 +11,7 @@ import {
 import { ConversationNotFoundError } from "@/lib/ai/errors"
 import { isConversationId } from "@/lib/ai/validation"
 import { getDashboardContext } from "@/lib/dashboard"
+import { serializeUtcTimestamp } from "@/lib/date-format"
 
 type AssistantPageProps = {
   searchParams: Promise<{ conversation?: string | string[] }>
@@ -53,8 +54,8 @@ export default async function AssistantPage({ searchParams }: AssistantPageProps
   const serializedConversations: ConversationSummary[] = conversations.map(
     (conversation) => ({
       ...conversation,
-      createdAt: conversation.createdAt.toISOString(),
-      updatedAt: conversation.updatedAt.toISOString(),
+      createdAt: serializeUtcTimestamp(conversation.createdAt),
+      updatedAt: serializeUtcTimestamp(conversation.updatedAt),
     })
   )
 
@@ -62,13 +63,13 @@ export default async function AssistantPage({ searchParams }: AssistantPageProps
     ? {
         id: selectedConversation.id,
         title: selectedConversation.title,
-        createdAt: selectedConversation.createdAt.toISOString(),
-        updatedAt: selectedConversation.updatedAt.toISOString(),
+        createdAt: serializeUtcTimestamp(selectedConversation.createdAt),
+        updatedAt: serializeUtcTimestamp(selectedConversation.updatedAt),
         messages: selectedConversation.messages.map((message) => ({
           id: message.id,
           role: message.role,
           content: message.content,
-          createdAt: message.createdAt.toISOString(),
+          createdAt: serializeUtcTimestamp(message.createdAt),
         })),
       }
     : undefined

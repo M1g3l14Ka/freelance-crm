@@ -106,6 +106,7 @@ Create a `.env` file in the root directory:
 DATABASE_URL="file:./dev.db"
 AUTH_SECRET="your-secret-key-here"
 GEMINI_API_KEY="your-gemini-api-key"
+GEMINI_MODEL="gemini-3-flash-preview"
 ```
 
 > **Get Gemini API key:** https://aistudio.google.com/apikey
@@ -139,6 +140,8 @@ The seed is idempotent and never runs during install, build, or application star
 ## AI conversation limits
 
 Authenticated non-demo users can keep persistent assistant conversations. Each successful request stores the user and assistant messages together only after Gemini responds successfully. Gemini requests are aborted after approximately 25 seconds.
+
+`GEMINI_MODEL` selects the server-side Gemini model and defaults to `gemini-3-flash-preview` when omitted or blank.
 
 The assistant allows up to 5 attempts per user in a rolling minute and up to 50 successfully stored user messages per UTC day. The daily limit is derived from persisted owned messages. The short burst limiter is intentionally in memory because production currently runs one PM2 process: it resets whenever that process restarts and is not suitable for multi-instance deployment. Replace it with a shared limiter before adding more application instances.
 

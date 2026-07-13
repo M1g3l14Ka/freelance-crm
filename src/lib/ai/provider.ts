@@ -2,8 +2,9 @@ import "server-only"
 
 import { AiProviderError, AiProviderTimeoutError } from "@/lib/ai/errors"
 
-const GEMINI_API_URL =
-  "https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent"
+const GEMINI_API_BASE_URL =
+  "https://generativelanguage.googleapis.com/v1beta/models"
+const DEFAULT_GEMINI_MODEL = "gemini-3-flash-preview"
 const GEMINI_TIMEOUT_MS = 25_000
 const MAX_ATTEMPTS = 3
 const RETRY_DELAYS_MS = [750, 1_500] as const
@@ -44,6 +45,11 @@ function extractAnswer(value: unknown): string | null {
   }
 
   return textParts.length ? textParts.join("\n") : null
+}
+
+function getGeminiApiUrl() {
+  const model = process.env.GEMINI_MODEL?.trim() || DEFAULT_GEMINI_MODEL
+  return `${GEMINI_API_BASE_URL}/${encodeURIComponent(model)}:generateContent`
 }
 
 function waitForRetry(delayMs: number, signal: AbortSignal): Promise<void> {
@@ -112,7 +118,7 @@ export async function generateAssistantReply({
       let response: Response
 
       try {
-        response = await fetch(GEMINI_API_URL, {
+        response = await fetch(getGeminiApiUrl(), {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
