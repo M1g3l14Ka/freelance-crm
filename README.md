@@ -76,7 +76,7 @@ Building this project helped me:
 ## Future Improvements
 
 - **Client Management** - Track clients and their projects separately
-- **Email Notifications** - Reminders for subscription payments and budget limits via Resend
+- **Email Notifications** - SMTP reminders for subscription payments and budget limits
 - **Dark/Light Theme** - Toggle between themes based on user preference
 - **PostgreSQL Support** - Alternative database option for production (Neon, Supabase)
 - **Mobile App** - React Native version for on-the-go tracking
@@ -141,6 +141,30 @@ The seed is idempotent and never runs during install, build, or application star
 Authenticated non-demo users can keep persistent assistant conversations. Each successful request stores the user and assistant messages together only after Gemini responds successfully. Gemini requests are aborted after approximately 25 seconds.
 
 The assistant allows up to 5 attempts per user in a rolling minute and up to 50 successfully stored user messages per UTC day. The daily limit is derived from persisted owned messages. The short burst limiter is intentionally in memory because production currently runs one PM2 process: it resets whenever that process restarts and is not suitable for multi-instance deployment. Replace it with a shared limiter before adding more application instances.
+
+---
+
+## Password reset security core
+
+The public `/forgot-password` and `/reset-password` pages deliver reset links through generic SMTP using Nodemailer. Password-reset tokens are cryptographically random, stored only as SHA-256 hashes, expire after 30 minutes, and are atomically single-use. Public forgot-password responses are identical for existing, unknown, demo, ineligible, throttled, and delivery-failure cases.
+
+Configure these server-only values:
+
+```dotenv
+APP_URL="https://crm.mkfox.tech"
+SMTP_HOST="smtp.example.com"
+SMTP_PORT="465"
+SMTP_SECURE="true"
+SMTP_USER="no-reply@example.com"
+SMTP_PASS="replace-with-provider-smtp-password"
+SMTP_FROM="MKFox CRM <no-reply@example.com>"
+```
+
+`APP_URL` is the trusted origin used to construct reset links; production requires an absolute HTTPS URL. Port 465 normally uses direct TLS with `SMTP_SECURE=true`. Port 587 normally uses STARTTLS with `SMTP_SECURE=false`. Use provider-specific SMTP credentials or an app password when required. After changing production environment values, restart the existing process with `pm2 restart crm --update-env`.
+
+Forgot-password delivery is limited to approximately three attempts per normalized-email hash in 15 minutes, and a recent valid token has a five-minute issuance cooldown. The in-memory limiter resets after a PM2 restart and is suitable only for the current single-process deployment; a multi-instance deployment requires a shared limiter.
+
+Auth.js currently uses JWT sessions. Resetting a password does not invalidate JWTs that were issued before the reset; revoking those sessions requires a separate authentication-architecture change.
 
 ---
 
