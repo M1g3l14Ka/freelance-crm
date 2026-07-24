@@ -282,7 +282,7 @@ Run the following sequence on the VPS:
    curl --fail --silent --show-error https://crm.mkfox.tech/ > /dev/null && echo "Health check passed"
    ```
 
-Vercel and Turso/libSQL are alternative hosting options supported by parts of the codebase, but they are not the active production environment and are not part of this deployment procedure.
+VPS с Nginx/PM2 + Turso/sqlite3 are alternative hosting options supported by parts of the codebase, but they are not the active production environment and are not part of this deployment procedure.
 
 ---
 
